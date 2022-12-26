@@ -12,6 +12,7 @@ Game *game_create(int width, int height, int scale)
   }
 
   game->window = window_create("Pacman", 640, 480);
+  window_load_font(game->window, "assets/fonts/OpenSans.ttf", 16);
   if (game->window == NULL) {
     return NULL;
   }
@@ -82,8 +83,12 @@ void game_state_menu_draw(Game *game)
   }
 
   SDL_Rect rect = { 0, 0, 30, 30 };
+  SDL_Rect rect2 = { 50, 50, 100, 16 };
 
   window_draw_rect(game->window, &rect, 255, 0, 0, 255);
+  window_draw_rect(game->window, &rect2, 255, 255, 0, 255);
+
+  window_draw_text(game->window, "Hello World", 50, 50, 255, 255, 255);
 }
 
 void game_state_game_draw(Game *game)

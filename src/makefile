@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -g -Wall
-CLIBS = -lSDL2main -lSDL2 -lSDL2_image
+CLIBS = -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf
 
 DEBUG_DIR = ../debug
 OUTPUT_NAME = pacman

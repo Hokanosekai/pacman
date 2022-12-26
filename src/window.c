@@ -1,6 +1,9 @@
-#include "window.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
+
+#include "window.h"
+
 
 void cleanup(SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture)
 {
@@ -15,6 +18,7 @@ void cleanup(SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture)
   }
   IMG_Quit();
   SDL_Quit();
+  TTF_Quit();
 }
 
 Window *window_create(char *title, int width, int height)
@@ -23,6 +27,7 @@ Window *window_create(char *title, int width, int height)
   window->width = width;
   window->height = height;
   window->title = title;
+  window->font = NULL;
   window->window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
   if (window->window == NULL) {
       fprintf(stderr, "Erreur lors de la création de la fenêtre : %s\n", SDL_GetError());
@@ -42,6 +47,7 @@ Window *window_create(char *title, int width, int height)
 
 void window_destroy(Window *window)
 {
+  TTF_CloseFont(window->font);
   cleanup(window->window, window->renderer, NULL);
   free(window);
 }
@@ -88,6 +94,38 @@ void window_draw_circle(Window *window, int x, int y, int radius, int r, int g, 
   }
 }
 
+void window_draw_text(Window *window, int x, int y, char *text, int r, int g, int b)
+{
+  /*SDL_Color color = {r, g, b, 255};
+  SDL_Surface* surface = TTF_RenderText_Solid(window->font, "hello", color);
+  if (surface == NULL) {
+    fprintf(stderr, "Erreur lors du chargement de l'image : %s\n", SDL_GetError());
+    cleanup(window->window, window->renderer, NULL);
+    return;
+  }
+
+  SDL_Texture *texture = SDL_CreateTextureFromSurface(window->renderer, surface);
+  SDL_FreeSurface(surface);
+  if (texture == NULL) {
+    fprintf(stderr, "Erreur lors de la création de la texture : %s", SDL_GetError());
+    cleanup(window->window, window->renderer, NULL);
+    return;
+  }
+
+  SDL_Rect rect = {x, y, 100, 16};
+  if (SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h) != 0) {
+    fprintf(stderr, "Erreur lors de la récupération des dimensions de la texture : %s", SDL_GetError());
+    cleanup(window->window, window->renderer, texture);
+    return;
+  }
+  if (SDL_RenderCopy(window->renderer, texture, NULL, &rect) != 0) {
+    fprintf(stderr, "Erreur lors du rendu de la texture : %s", SDL_GetError());
+    cleanup(window->window, window->renderer, texture);
+    return;
+  }*/
+  SDL_RenderDrawText();
+}
+
 void window_load_texture(Window *window, const char *path, SDL_Texture **texture)
 {
   SDL_Surface* surface = IMG_Load(path);
@@ -101,6 +139,16 @@ void window_load_texture(Window *window, const char *path, SDL_Texture **texture
   SDL_FreeSurface(surface);
   if (*texture == NULL) {
       fprintf(stderr, "Erreur lors de la création de la texture : %s\n", SDL_GetError());
+      cleanup(window->window, window->renderer, NULL);
+      return;
+  }
+}
+
+void window_load_font(Window *window, const char *path, int size)
+{
+  window->font = TTF_OpenFont(path, size);
+  if (window->font == NULL) {
+      fprintf(stderr, "Erreur lors du chargement de la police : %s\n", TTF_GetError());
       cleanup(window->window, window->renderer, NULL);
       return;
   }

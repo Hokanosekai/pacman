@@ -3,12 +3,14 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 
 typedef struct {
     SDL_Window *window;
     SDL_Renderer *renderer;
     SDL_Texture *texture;
     SDL_Surface *surface;
+    TTF_Font *font;
     int width;
     int height;
     char *title;
@@ -114,5 +116,13 @@ void window_draw_text(Window *window, int x, int y, char *text, int r, int g, in
  * @param texture SDL_Texture
  */
 void window_load_texture(Window *window, const char *path, SDL_Texture **texture);
+
+/**
+ * @brief Load a font from a path
+ * @param window Window
+ * @param path Path
+ * @param size Font size
+ */
+void window_load_font(Window *window, const char *path, int size);
 
 # endif

@@ -1,10 +1,15 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 
 #include "window.h"
 #include "game.h"
 #include "game_state.h"
+
+#define WINDOW_WIDTH 640
+#define WINDOW_HEIGHT 480
+#define WINDOW_SCALE 1
 
 
 int main(int argc, char *argv[])
@@ -25,8 +30,15 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
 
+  // Init SDL_ttf
+  if (TTF_Init() < 0) {
+    fprintf(stderr, "Erreur d'initialisation de SDL_ttf : %s\n", TTF_GetError());
+    cleanup(NULL, NULL, NULL);
+    return EXIT_FAILURE;
+  }
+
   // Create game instance
-  game = game_create(640, 480, 1);
+  game = game_create(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_SCALE);
   if (game == NULL) {
     return EXIT_FAILURE;
   }
