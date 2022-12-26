@@ -94,10 +94,10 @@ void window_draw_circle(Window *window, int x, int y, int radius, int r, int g, 
   }
 }
 
-void window_draw_text(Window *window, int x, int y, char *text, int r, int g, int b)
+void window_draw_text(Window *window, int x, int y, const char *text, int r, int g, int b)
 {
-  /*SDL_Color color = {r, g, b, 255};
-  SDL_Surface* surface = TTF_RenderText_Solid(window->font, "hello", color);
+  SDL_Color color = {r, g, b, 255};
+  SDL_Surface* surface = TTF_RenderText_Solid(window->font, text, color);
   if (surface == NULL) {
     fprintf(stderr, "Erreur lors du chargement de l'image : %s\n", SDL_GetError());
     cleanup(window->window, window->renderer, NULL);
@@ -122,8 +122,7 @@ void window_draw_text(Window *window, int x, int y, char *text, int r, int g, in
     fprintf(stderr, "Erreur lors du rendu de la texture : %s", SDL_GetError());
     cleanup(window->window, window->renderer, texture);
     return;
-  }*/
-  SDL_RenderDrawText();
+  }
 }
 
 void window_load_texture(Window *window, const char *path, SDL_Texture **texture)

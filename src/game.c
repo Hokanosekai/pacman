@@ -88,7 +88,7 @@ void game_state_menu_draw(Game *game)
   window_draw_rect(game->window, &rect, 255, 0, 0, 255);
   window_draw_rect(game->window, &rect2, 255, 255, 0, 255);
 
-  window_draw_text(game->window, "Hello World", 50, 50, 255, 255, 255);
+  window_draw_text(game->window, 50, 50, "Hello World", 255, 255, 255);
 }
 
 void game_state_game_draw(Game *game)

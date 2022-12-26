@@ -107,7 +107,7 @@ void window_draw_circle(Window *window, int x, int y, int radius, int r, int g, 
  * @param g Green
  * @param b Blue
  */
-void window_draw_text(Window *window, int x, int y, char *text, int r, int g, int b);
+void window_draw_text(Window *window, int x, int y, const char *text, int r, int g, int b);
 
 /**
  * @brief Load a texture from a path
