@@ -5,7 +5,7 @@ CLIBS = -lSDL2main -lSDL2 -lSDL2_image
 DEBUG_DIR = ../debug
 OUTPUT_NAME = pacman
 
-OBJS = main.o window.o
+OBJS = main.o window.o game.o
 
 all: pacman
 
