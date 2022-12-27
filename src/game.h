@@ -4,6 +4,7 @@
 #include "game_state.h"
 #include "window.h"
 #include "player.h"
+#include "map.h"
 
 typedef struct {
     int width;
@@ -12,8 +13,9 @@ typedef struct {
     int running;
     int score;
     Window *window;
-    GameState *state;
+    GameState state;
     Player *player;
+    Map *map;
 } Game;
 
 /**
@@ -37,10 +39,22 @@ void game_destroy(Game *game);
  */
 void game_run(Game *game);
 
+/**
+ * @brief Display the menu screen
+ * @param game Game
+ */
 void game_state_menu_draw(Game *game);
 
+/**
+ * @brief Display the game screen
+ * @param game Game
+ */
 void game_state_game_draw(Game *game);
 
+/**
+ * @brief Display the game over screen
+ * @param game Game
+ */
 void game_state_game_over_draw(Game *game);
 
 # endif

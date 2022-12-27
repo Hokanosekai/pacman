@@ -54,7 +54,7 @@ void window_destroy(Window *window)
 
 void window_clear(Window *window)
 {
-  SDL_SetRenderDrawColor(window->renderer, 0, 0, 0, 255);
+  SDL_SetRenderDrawColor(window->renderer, 255, 213, 128, 255);
   SDL_RenderClear(window->renderer);
 }
 
@@ -65,30 +65,58 @@ void window_update(Window *window)
 
 void window_draw(Window *window, SDL_Texture *texture, SDL_Rect *rect)
 {
-  SDL_RenderCopy(window->renderer, texture, NULL, rect);
+  if (SDL_RenderCopy(window->renderer, texture, NULL, rect) != 0) {
+    fprintf(stderr, "Erreur lors du rendu de la texture : %s\n", SDL_GetError());
+    cleanup(window->window, window->renderer, texture);
+    return;
+  }
 }
 
 void window_draw_rect(Window *window, SDL_Rect *rect, int r, int g, int b, int a)
 {
-  SDL_SetRenderDrawColor(window->renderer, r, g, b, a);
-  SDL_RenderDrawRect(window->renderer, rect);
+  if (SDL_SetRenderDrawColor(window->renderer, r, g, b, a) != 0) {
+    fprintf(stderr, "Erreur lors du rendu du rectangle : %s\n", SDL_GetError());
+    cleanup(window->window, window->renderer, NULL);
+    return;
+  }
+  if (SDL_RenderDrawRect(window->renderer, rect) != 0) {
+    fprintf(stderr, "Erreur lors du rendu du rectangle : %s\n", SDL_GetError());
+    cleanup(window->window, window->renderer, NULL);
+    return;
+  }
 }
 
 void window_draw_line(Window *window, int x1, int y1, int x2, int y2, int r, int g, int b, int a)
 {
-  SDL_SetRenderDrawColor(window->renderer, r, g, b, a);
-  SDL_RenderDrawLine(window->renderer, x1, y1, x2, y2);
+  if (SDL_SetRenderDrawColor(window->renderer, r, g, b, a) != 0) {
+    fprintf(stderr, "Erreur lors du rendu de la ligne : %s\n", SDL_GetError());
+    cleanup(window->window, window->renderer, NULL);
+    return;
+  }
+  if (SDL_RenderDrawLine(window->renderer, x1, y1, x2, y2) != 0) {
+    fprintf(stderr, "Erreur lors du rendu de la ligne : %s\n", SDL_GetError());
+    cleanup(window->window, window->renderer, NULL);
+    return;
+  }
 }
 
 void window_draw_circle(Window *window, int x, int y, int radius, int r, int g, int b, int a)
 {
-  SDL_SetRenderDrawColor(window->renderer, r, g, b, a);
+  if (SDL_SetRenderDrawColor(window->renderer, r, g, b, a) != 0) {
+    fprintf(stderr, "Erreur lors du rendu du cercle : %s\n", SDL_GetError());
+    cleanup(window->window, window->renderer, NULL);
+    return;
+  }
   for (int w = 0; w < radius * 2; w++) {
     for (int h = 0; h < radius * 2; h++) {
       int dx = radius - w; // horizontal offset
       int dy = radius - h; // vertical offset
       if ((dx*dx + dy*dy) <= (radius * radius)) {
-        SDL_RenderDrawPoint(window->renderer, x + dx, y + dy);
+        if (SDL_RenderDrawPoint(window->renderer, x + dx, y + dy) != 0) {
+          fprintf(stderr, "Erreur lors du rendu du cercle : %s\n", SDL_GetError());
+          cleanup(window->window, window->renderer, NULL);
+          return;
+        }
       }
     }
   }
@@ -119,6 +147,15 @@ void window_draw_text(Window *window, int x, int y, const char *text, int r, int
     return;
   }
   if (SDL_RenderCopy(window->renderer, texture, NULL, &rect) != 0) {
+    fprintf(stderr, "Erreur lors du rendu de la texture : %s", SDL_GetError());
+    cleanup(window->window, window->renderer, texture);
+    return;
+  }
+}
+
+void window_draw_texture(Window *window, SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst)
+{
+  if (SDL_RenderCopy(window->renderer, texture, src, dst) != 0) {
     fprintf(stderr, "Erreur lors du rendu de la texture : %s", SDL_GetError());
     cleanup(window->window, window->renderer, texture);
     return;

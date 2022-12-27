@@ -110,6 +110,15 @@ void window_draw_circle(Window *window, int x, int y, int radius, int r, int g, 
 void window_draw_text(Window *window, int x, int y, const char *text, int r, int g, int b);
 
 /**
+ * @brief Draw a texture on the window
+ * @param window Window
+ * @param texture SDL_Texture
+ * @param src SDL_Rect
+ * @param dst SDL_Rect
+ */
+void window_draw_texture(Window *window, SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst);
+
+/**
  * @brief Load a texture from a path
  * @param window Window
  * @param path Path
