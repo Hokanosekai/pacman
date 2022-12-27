@@ -1,6 +1,10 @@
 #include "game.h"
 #include "game_state.h"
 #include "window.h"
+#include "player.h"
+
+#define PLAYER_START_X 0
+#define PLAYER_START_Y 0
 
 
 Game *game_create(int width, int height, int scale)
@@ -22,6 +26,8 @@ Game *game_create(int width, int height, int scale)
     return NULL;
   }
 
+  game->player = player_create(game->window, PLAYER_START_X, PLAYER_START_Y);
+
   return game;
 }
 
@@ -32,6 +38,7 @@ void game_destroy(Game *game)
   }
 
   window_destroy(game->window);
+  player_destroy(game->player);
   free(game);
 }
 
@@ -54,6 +61,8 @@ void game_run(Game *game)
     }
 
     window_clear(game->window);
+
+    player_update(game->player, game->window);
 
     switch ((int)game->state)
     {
@@ -89,6 +98,8 @@ void game_state_menu_draw(Game *game)
   window_draw_rect(game->window, &rect2, 255, 255, 0, 255);
 
   window_draw_text(game->window, 50, 50, "Hello World", 255, 255, 255);
+
+  player_draw(game->player, game->window);
 }
 
 void game_state_game_draw(Game *game)

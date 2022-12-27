@@ -3,14 +3,17 @@
 
 #include "game_state.h"
 #include "window.h"
+#include "player.h"
 
 typedef struct {
     int width;
     int height;
     int scale;
     int running;
+    int score;
     Window *window;
     GameState *state;
+    Player *player;
 } Game;
 
 /**
