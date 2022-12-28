@@ -5,6 +5,7 @@
 #include <SDL2/SDL_image.h>
 
 #include "window.h"
+#include "map.h"
 
 typedef enum {
   PLAYER_NULL,
@@ -50,6 +51,12 @@ void player_draw(Player *player, Window *window);
  */
 void player_destroy(Player *player);
 
-void player_check_collision(Player *player, Window *window);
+/**
+ * @brief Check if the player is colliding with a wall
+ * @param player Player
+ * @param window Window
+ * @param map Map
+ */
+void player_check_collision(Player *player, Window *window, Map *map);
 
 # endif

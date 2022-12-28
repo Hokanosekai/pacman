@@ -1,11 +1,11 @@
 CC = gcc
 CFLAGS = -g -Wall
-CLIBS = -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf
+CLIBS = -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lm
 
 DEBUG_DIR = ../debug
 OUTPUT_NAME = pacman
 
-OBJS = main.o game.o window.o player.o map.o
+OBJS = $(DEBUG_DIR)/main.o $(DEBUG_DIR)/game.o $(DEBUG_DIR)/window.o $(DEBUG_DIR)/player.o $(DEBUG_DIR)/map.o
 
 all: pacman
 
@@ -14,7 +14,6 @@ pacman: $(OBJS)
 
 $(DEBUG_DIR)/%.o: %.c 
 	$(CC) $(CFLAGS) -c $< -o $(DEBUG_DIR)/$@ $(CLIBS)
-	cp $@ $(DEBUG_DIR)
 
 clean:
 			rm -f $(DEBUG_DIR)/*.o pacman

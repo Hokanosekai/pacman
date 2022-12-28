@@ -6,6 +6,8 @@
 
 #include "window.h"
 
+#define MAP_TILE_SIZE 32
+
 typedef struct {
   SDL_Texture *tile_map;
   FILE *map_file;

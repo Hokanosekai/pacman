@@ -5,8 +5,10 @@
 #include "window.h"
 #include "game.h"
 #include "game_state.h"
+#include "map.h"
+#include "map_tile.h"
 
-#define PLAYER_SPEED 2
+#define PLAYER_SPEED 1
 #define PLAYER_SIZE 32
 
 Player *player_create(Window *window, int x, int y)
@@ -20,7 +22,7 @@ Player *player_create(Window *window, int x, int y)
   player->y = y;
   player->speed = PLAYER_SPEED;
   player->direction = PLAYER_NULL;
-  window_load_texture(window, "assets/textures/pacman.png", &player->texture);
+  window_load_texture(window, "../assets/textures/pacman.png", &player->texture);
 
   return player;
 }
@@ -60,8 +62,6 @@ void player_update(Player *player, Window *window)
     player->direction = PLAYER_NULL;
   }
 
-  player_check_collision(player, window);
-
   switch (player->direction) {
     case PLAYER_UP:
       player->y -= player->speed;
@@ -80,18 +80,39 @@ void player_update(Player *player, Window *window)
   }
 }
 
-void player_check_collision(Player *player, Window *window)
+void player_check_collision(Player *player, Window *window, Map *map)
 {
   if (player->x < 0) {
-    player->x = 0;
+    player->x = window->width;
   }
   if (player->x > window->width - PLAYER_SIZE) {
-    player->x = window->width - PLAYER_SIZE;
+    player->x = 0;
   }
   if (player->y < 0) {
-    player->y = 0;
+    player->y = window->height;
   }
   if (player->y > window->height - PLAYER_SIZE) {
-    player->y = window->height - PLAYER_SIZE;
+    player->y = 0;
+  }
+
+  int x = floor((player->x + PLAYER_SIZE/2) / MAP_TILE_SIZE);
+  int y = floor((player->y + PLAYER_SIZE/2) / MAP_TILE_SIZE);
+
+  //printf("x: %d, y: %d = %d\n", x, y, map->map[y][x]);
+
+  if (map->map[x][y] != TILE_SPACE) {
+    if (player->direction == PLAYER_UP) {
+      player->y = (y + 1) * MAP_TILE_SIZE;
+    }
+    if (player->direction == PLAYER_DOWN) {
+      player->y = (y - 1) * MAP_TILE_SIZE;
+    }
+    if (player->direction == PLAYER_LEFT) {
+      player->x = (x + 1) * MAP_TILE_SIZE;
+    }
+    if (player->direction == PLAYER_RIGHT) {
+      player->x = (x - 1) * MAP_TILE_SIZE;
+    }
+    player->direction = PLAYER_NULL;
   }
 }

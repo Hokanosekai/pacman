@@ -2,8 +2,6 @@
 #include "window.h"
 #include "map_tile.h"
 
-#define MAP_TILE_SIZE 32
-
 Map *map_init(Window *window, const char *map_path, const char *tiles_textures_path)
 {
   Map *map = malloc(sizeof(*map));
@@ -49,6 +47,24 @@ void map_destroy(Map *map)
   free(map);
 }
 
+Tiles get_tile_from_char(char c)
+{
+  if (c == '1') return TILE_WALL_BOTTOM_LEFT_CORNER;
+  if (c == '2') return TILE_WALL_BOTTOM_RIGHT_CORNER;
+  if (c == '3') return TILE_WALL_TOP_LEFT_CORNER;
+  if (c == '4') return TILE_WALL_TOP_RIGHT_CORNER;
+  if (c == '0') return TILE_SPACE;
+  if (c == '#') return TILE_FULL;
+  if (c == 'd') return TILE_WALL_DOWN;
+  if (c == 'u') return TILE_WALL_UP;
+  if (c == 'l') return TILE_WALL_LEFT;
+  if (c == 'r') return TILE_WALL_RIGHT;
+  if (c == 'm') return TILE_MIDDLE;
+  if (c == '%') return TILE_MIDDLE_LEFT;
+  if (c == '*') return TILE_MIDDLE_RIGHT;
+  return TILE_SPACE;
+}
+
 void map_render(Map *map, Window *window)
 {
   if (map == NULL) {
@@ -63,18 +79,8 @@ void map_render(Map *map, Window *window)
 
   while (tile != EOF) {
     tile = fgetc(map->map_file);
-    
-    if (tile == '0') {
-      map->map[col][row] = TILE_SPACE;
-    } else if (tile == 'd') {
-      map->map[col][row] = TILE_WALL_DOWN;
-    } else if (tile == 'l') {
-      map->map[col][row] = TILE_WALL_LEFT;
-    } else if (tile == 'r') {
-      map->map[col][row] = TILE_WALL_RIGHT;
-    } else if (tile == 'u') {
-      map->map[col][row] = TILE_WALL_UP;
-    }
+
+    map->map[col][row] = get_tile_from_char(tile);
 
     if (tile != '\n') col++;
     if (col == map->cols) {
@@ -101,6 +107,30 @@ void map_render(Map *map, Window *window)
           break;
         case TILE_WALL_UP:
           src = (SDL_Rect) TILE_WALL_UP_COORDS;
+          break;
+        case TILE_WALL_BOTTOM_LEFT_CORNER:
+          src = (SDL_Rect) TILE_WALL_BOTTOM_LEFT_CORNER_COORDS;
+          break;
+        case TILE_WALL_BOTTOM_RIGHT_CORNER:
+          src = (SDL_Rect) TILE_WALL_BOTTOM_RIGHT_CORNER_COORDS;
+          break;
+        case TILE_WALL_TOP_LEFT_CORNER:
+          src = (SDL_Rect) TILE_WALL_TOP_LEFT_CORNER_COORDS;
+          break;
+        case TILE_WALL_TOP_RIGHT_CORNER:
+          src = (SDL_Rect) TILE_WALL_TOP_RIGHT_CORNER_COORDS;
+          break;
+        case TILE_MIDDLE:
+          src = (SDL_Rect) TILE_MIDDLE_COORDS;
+          break;
+        case TILE_MIDDLE_LEFT:
+          src = (SDL_Rect) TILE_MIDDLE_LEFT_COORDS;
+          break;
+        case TILE_MIDDLE_RIGHT:
+          src = (SDL_Rect) TILE_MIDDLE_RIGHT_COORDS;
+          break;
+        case TILE_FULL:
+          src = (SDL_Rect) TILE_FULL_COORDS;
           break;
         default:
           src = (SDL_Rect) TILE_SPACE_COORDS;
