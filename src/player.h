@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <stdbool.h>
 
 #include "window.h"
 #include "map.h"
@@ -18,8 +19,10 @@ typedef enum {
 typedef struct {
   int x, y;
   int speed;
-  SDL_Texture *texture;
+  int animation_frame;
+  SDL_Texture *sprite;
   PlayerDirection direction;
+  bool moving;
 } Player;
 
 /**

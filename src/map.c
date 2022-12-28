@@ -59,9 +59,23 @@ Tiles get_tile_from_char(char c)
   if (c == 'u') return TILE_WALL_UP;
   if (c == 'l') return TILE_WALL_LEFT;
   if (c == 'r') return TILE_WALL_RIGHT;
-  if (c == 'm') return TILE_MIDDLE;
-  if (c == '%') return TILE_MIDDLE_LEFT;
-  if (c == '*') return TILE_MIDDLE_RIGHT;
+  if (c == '=') return TILE_MIDDLE;
+  if (c == '<') return TILE_MIDDLE_LEFT;
+  if (c == '>') return TILE_MIDDLE_RIGHT;
+  if (c == '.') return TILE_DOT;
+  if (c == '(') return TILE_MIDDLE_CORNER_TOP_LEFT;
+  if (c == ')') return TILE_MIDDLE_CORNER_TOP_RIGHT;
+  if (c == '[') return TILE_MIDDLE_CORNER_BOTTOM_LEFT;
+  if (c == ']') return TILE_MIDDLE_CORNER_BOTTOM_RIGHT;
+  if (c == 'z') return TILE_MIDDLE_INTERSECTION_TOP;
+  if (c == 's') return TILE_MIDDLE_INTERSECTION_BOTTOM;
+  if (c == 'q') return TILE_MIDDLE_INTERSECTION_LEFT;
+  if (c == 'f') return TILE_MIDDLE_INTERSECTION_RIGHT;
+  if (c == '+') return TILE_MIDDLE_INTERSECTION;
+  if (c == '|') return TILE_VERTICAL;
+  if (c == '^') return TILE_VERTICAL_UP;
+  if (c == 'v') return TILE_VERTICAL_DOWN;
+  if (c == 'p') return TILE_POWER_UP;
   return TILE_SPACE;
 }
 
@@ -79,6 +93,8 @@ void map_render(Map *map, Window *window)
 
   while (tile != EOF) {
     tile = fgetc(map->map_file);
+
+    printf("%c", tile);
 
     map->map[col][row] = get_tile_from_char(tile);
 
@@ -131,6 +147,48 @@ void map_render(Map *map, Window *window)
           break;
         case TILE_FULL:
           src = (SDL_Rect) TILE_FULL_COORDS;
+          break;
+        case TILE_DOT:
+          src = (SDL_Rect) TILE_DOT_COORDS;
+          break;
+        case TILE_MIDDLE_CORNER_TOP_LEFT:
+          src = (SDL_Rect) TILE_MIDDLE_CORNER_TOP_LEFT_COORDS;
+          break;
+        case TILE_MIDDLE_CORNER_TOP_RIGHT:
+          src = (SDL_Rect) TILE_MIDDLE_CORNER_TOP_RIGHT_COORDS;
+          break;
+        case TILE_MIDDLE_CORNER_BOTTOM_LEFT:
+          src = (SDL_Rect) TILE_MIDDLE_CORNER_BOTTOM_LEFT_COORDS;
+          break;
+        case TILE_MIDDLE_CORNER_BOTTOM_RIGHT:
+          src = (SDL_Rect) TILE_MIDDLE_CORNER_BOTTOM_RIGHT_COORDS;
+          break;
+        case TILE_MIDDLE_INTERSECTION_TOP:
+          src = (SDL_Rect) TILE_MIDDLE_INTERSECTION_TOP_COORDS;
+          break;
+        case TILE_MIDDLE_INTERSECTION_BOTTOM:
+          src = (SDL_Rect) TILE_MIDDLE_INTERSECTION_BOTTOM_COORDS;
+          break;
+        case TILE_MIDDLE_INTERSECTION_LEFT:
+          src = (SDL_Rect) TILE_MIDDLE_INTERSECTION_LEFT_COORDS;
+          break;
+        case TILE_MIDDLE_INTERSECTION_RIGHT:
+          src = (SDL_Rect) TILE_MIDDLE_INTERSECTION_RIGHT_COORDS;
+          break;
+        case TILE_MIDDLE_INTERSECTION:
+          src = (SDL_Rect) TILE_MIDDLE_INTERSECTION_COORDS;
+          break;
+        case TILE_VERTICAL:
+          src = (SDL_Rect) TILE_VERTICAL_COORDS;
+          break;
+        case TILE_VERTICAL_UP:
+          src = (SDL_Rect) TILE_VERTICAL_UP_COORDS;
+          break;
+        case TILE_VERTICAL_DOWN:
+          src = (SDL_Rect) TILE_VERTICAL_DOWN_COORDS;
+          break;
+        case TILE_POWER_UP:
+          src = (SDL_Rect) TILE_POWER_UP_COORDS;
           break;
         default:
           src = (SDL_Rect) TILE_SPACE_COORDS;

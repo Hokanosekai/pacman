@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
+#include <stdbool.h>
 
 typedef struct {
     SDL_Window *window;
@@ -133,5 +134,16 @@ void window_load_texture(Window *window, const char *path, SDL_Texture **texture
  * @param size Font size
  */
 void window_load_font(Window *window, const char *path, int size);
+
+/**
+ * @brief Rotate texture 
+ * @param window Window
+ * @param texture Texture
+ * @param angle Angle to rotate
+ * @param flip Flip image verticaly
+ */
+void window_rotate_texture(Window *window, SDL_Texture *texture, SDL_Rect *rect, double angle, SDL_RendererFlip flip);
+
+void window_draw_sprite(Window *window, SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst, double angle, SDL_RendererFlip flip);
 
 # endif

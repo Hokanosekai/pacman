@@ -1,7 +1,12 @@
+#include <unistd.h>
+
 #include "game.h"
 #include "game_state.h"
 #include "window.h"
 #include "player.h"
+
+#define _XOPEN_SOURCE 500
+#define FPS 60
 
 #define PLAYER_START_X 5
 #define PLAYER_START_Y 5
@@ -23,7 +28,7 @@ Game *game_create(int width, int height, int scale)
   }
 
   // init map
-  game->map = map_init(game->window, "../assets/maps/map1.txt", "../assets/textures/tiles3.png");
+  game->map = map_init(game->window, "../assets/maps/map1.txt", "../assets/textures/tiles5.png");
   if (game->map == NULL) {
     return NULL;
   }
@@ -98,6 +103,7 @@ void game_run(Game *game)
     window_update(game->window);
 
     SDL_Delay(10);
+    usleep(1000 * 1000 / FPS);
   }
 }
 

@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
+#include <stdbool.h>
 
 #include "window.h"
 
@@ -188,4 +189,19 @@ void window_load_font(Window *window, const char *path, int size)
       cleanup(window->window, window->renderer, NULL);
       return;
   }
+}
+
+void window_rotate_texture(Window *window, SDL_Texture *texture, SDL_Rect *rect, double angle, SDL_RendererFlip flip)
+{
+  int w, h;
+  SDL_QueryTexture(texture, NULL, NULL, &w, &h);
+  SDL_Point center = { w/2, h/2 };
+  SDL_RenderCopyEx(window->renderer, texture, NULL, rect, angle, &center, flip);
+}
+
+
+void window_draw_sprite(Window *window, SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst, double angle, SDL_RendererFlip flip)
+{
+  SDL_Point center = { src->w/2, src->h/2 };
+  SDL_RenderCopyEx(window->renderer, texture, src, dst, angle, &center, flip);
 }
