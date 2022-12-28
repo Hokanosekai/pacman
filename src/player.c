@@ -24,6 +24,10 @@ Player *player_create(Window *window, int x, int y)
   player->dead = false;
   player->invincible = false;
   player->lives = 3;
+  player->invincible_timer = 0;
+  player->number_of_dots_eaten = 0;
+  player->number_of_power_pellets_eaten = 0;
+  player->number_of_ghosts_eaten = 0;
   window_load_texture(window, "../assets/sprites/pacman2.png", &player->sprite);
 
   return player;
@@ -107,4 +111,27 @@ void player_update(Player *player, Window *window)
   if (player->moving) {
     player->animation_frame = (player->animation_frame + 1) % 6;
   }
+
+  if (player->invincible) {
+    player->invincible_timer++;
+    if (player->invincible_timer > 300) {
+      player->invincible = false;
+      player->invincible_timer = 0;
+    }
+  }
+}
+
+void player_reset(Player *player)
+{
+  player->x = 5 * MAP_TILE_SIZE;
+  player->y = 5 * MAP_TILE_SIZE;
+  player->direction = PLAYER_NULL;
+  player->animation_frame = 0;
+  player->moving = false;
+  player->dead = false;
+  player->invincible = false;
+  player->invincible_timer = 0;
+  player->number_of_dots_eaten = 0;
+  player->number_of_power_pellets_eaten = 0;
+  player->number_of_ghosts_eaten = 0;
 }

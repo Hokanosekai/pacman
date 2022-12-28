@@ -40,10 +40,6 @@ Game *game_create(int width, int height, int scale)
 
   // init game state
   game->state = STATE_MENU;
-  if (game->state == NULL) {
-    return NULL;
-  }
-
   // init player
   game->player = player_create(game->window, PLAYER_START_X * MAP_TILE_SIZE, PLAYER_START_Y * MAP_TILE_SIZE);
 
@@ -53,7 +49,6 @@ Game *game_create(int width, int height, int scale)
     game->ghosts[i] = ghost_create(game->window, 2 * MAP_TILE_SIZE, i * MAP_TILE_SIZE, i+1);
   }
   
-
   return game;
 }
 
@@ -93,6 +88,11 @@ void game_run(Game *game)
 
     game_check_collision(game);
     player_update(game->player, game->window);
+
+    for (size_t i = 0; i < 4; i++)
+    {
+      ghost_update(game->ghosts[i], game->window);
+    }
 
     switch ((int)game->state)
     {
@@ -186,12 +186,37 @@ void game_check_collision(Game *game)
   if (map->map[x][y] == TILE_DOT) {
     map->map[x][y] = TILE_SPACE;
     game->score += 10;
+    game->player->number_of_dots_eaten++;
   }
 
   if (map->map[x][y] == TILE_POWER_UP) {
     map->map[x][y] = TILE_SPACE;
     game->score += 50;
     game->player->invincible = true;
+    game->player->invincible_timer = 0;
+    game->player->number_of_ghosts_eaten = 0;
+    game->player->number_of_power_pellets_eaten++;
+  }
+
+  for (int i = 0; i < GHOST_AMOUNT; i++) {
+    if (ghost_check_collision(game->ghosts[i], player)) {
+      if (player->invincible) {
+        ghost_reset(game->ghosts[i]);
+        player->number_of_ghosts_eaten++;
+        game->score += 100 * player->number_of_ghosts_eaten;
+      } else {
+        player->lives--;
+        printf("lives: %d\n", player->lives);
+        if (player->lives == 0) {
+          game->state = STATE_GAME_OVER;
+        } else {
+          player_reset(player);
+          for (int i = 0; i < GHOST_AMOUNT; i++) {
+            ghost_reset(game->ghosts[i]);
+          }
+        }
+      }
+    }
   }
 }
 
@@ -206,9 +231,16 @@ void game_state_menu_draw(Game *game)
 
   player_draw(game->player, game->window);
 
-  for (size_t i = 0; i < GHOST_AMOUNT; i++)
+  for (int i = 0; i < GHOST_AMOUNT; i++)
   {
     ghost_render(game->ghosts[i], game->window);
+    if (game->player->invincible) {
+      ghost_animation(game->ghosts[i], game->window);
+    } else {
+      char *path = malloc(sizeof(char) * 255);
+      sprintf(path, "../assets/sprites/ghost_%d.png", i + 1);
+      window_load_texture(game->window, path, &game->ghosts[i]->sprite);
+    }
   }
 }
 
@@ -222,10 +254,10 @@ void display_score(Game *game)
 
 void display_lives(Game *game)
 {
-  for (int i = 0; i < game->player->lives; i++) {
+  for (int i = game->player->lives; i > 0; i--) {
     SDL_Texture *hearth;
     window_load_texture(game->window, "../assets/sprites/hearth.png", &hearth);
-    SDL_Rect rect = { 544 + MAP_TILE_SIZE * i, 0, 32, 32 };
+    SDL_Rect rect = { 640 - (MAP_TILE_SIZE * i), 0, 32, 32 };
     window_draw_texture(game->window, hearth, NULL, &rect);
   }
 }

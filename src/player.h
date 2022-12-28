@@ -19,11 +19,6 @@ typedef enum {
   PLAYER_RIGHT
 } PlayerDirection;
 
-typedef enum {
-  PLAYER_ANIMATION_IDLE,
-  PLAYER_ANIMATION_WALK
-} PlayerAnimation;
-
 typedef struct {
   int x, y;
   int speed;
@@ -34,6 +29,10 @@ typedef struct {
   bool moving;
   bool dead;
   bool invincible;
+  int invincible_timer;
+  int number_of_dots_eaten;
+  int number_of_power_pellets_eaten;
+  int number_of_ghosts_eaten;
 } Player;
 
 /**
@@ -58,6 +57,12 @@ void player_update(Player *player, Window *window);
  * @param game Game
  */
 void player_draw(Player *player, Window *window);
+
+/**
+ * @brief Reset the Player object
+ * @param player Player
+ */
+void player_reset(Player *player);
 
 /**
  * @brief Destroy the Player object

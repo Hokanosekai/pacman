@@ -7,6 +7,7 @@
 #include "game_state.h"
 #include "map.h"
 #include "map_tile.h"
+#include "player.h"
 
 Ghost *ghost_create(Window *window, int x, int y, int ghost_number)
 {
@@ -51,7 +52,31 @@ void ghost_render(Ghost *ghost, Window *window)
 
 void ghost_update(Ghost *ghost, Window *window)
 {
-  if (ghost->moving) {
-    ghost->animation_frame = (ghost->animation_frame + 1) % 2;
-  }
+  ghost->animation_frame = (ghost->animation_frame + 1) % 6;
+}
+
+void ghost_reset(Ghost *ghost)
+{
+  ghost->x = 3 * MAP_TILE_SIZE;
+  ghost->y = 7 * MAP_TILE_SIZE;
+  ghost->speed = GHOST_SPEED;
+  ghost->direction = GHOST_NULL;
+  ghost->animation_frame = 0;
+  ghost->is_active = false;
+  ghost->moving = false;
+}
+
+bool ghost_check_collision(Ghost *ghost, Player *player)
+{
+  float dx = ghost->x - player->x;
+  float dy = ghost->y - player->y;
+
+  float distance = sqrt(dx * dx + dy * dy);
+
+  return distance < 20;
+}
+
+void ghost_animation(Ghost *ghost, Window *window)
+{
+  window_load_texture(window, "../assets/sprites/ghost_inactive.png", &ghost->sprite);
 }
