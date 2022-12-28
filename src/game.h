@@ -5,6 +5,9 @@
 #include "window.h"
 #include "player.h"
 #include "map.h"
+#include "ghost.h"
+
+#define GHOST_AMOUNT 4
 
 typedef struct {
     int width;
@@ -16,6 +19,7 @@ typedef struct {
     GameState state;
     Player *player;
     Map *map;
+    Ghost *ghosts[GHOST_AMOUNT];
 } Game;
 
 /**
@@ -40,6 +44,12 @@ void game_destroy(Game *game);
 void game_run(Game *game);
 
 /**
+ * @brief Check collision between the player and the map
+ * @param game Game
+ */
+void game_check_collision(Game *game);
+
+/**
  * @brief Display the menu screen
  * @param game Game
  */
@@ -50,6 +60,18 @@ void game_state_menu_draw(Game *game);
  * @param game Game
  */
 void game_state_game_draw(Game *game);
+
+/**
+ * @brief Display the score
+ * @param game Game
+ */
+void display_score(Game *game);
+
+/**
+ * @brief Display the lives
+ * @param game Game
+ */
+void display_lives(Game *game);
 
 /**
  * @brief Display the game over screen

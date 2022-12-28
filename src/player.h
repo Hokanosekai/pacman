@@ -8,6 +8,9 @@
 #include "window.h"
 #include "map.h"
 
+#define PLAYER_SPEED 2
+#define PLAYER_SIZE 32
+
 typedef enum {
   PLAYER_NULL,
   PLAYER_UP,
@@ -16,13 +19,21 @@ typedef enum {
   PLAYER_RIGHT
 } PlayerDirection;
 
+typedef enum {
+  PLAYER_ANIMATION_IDLE,
+  PLAYER_ANIMATION_WALK
+} PlayerAnimation;
+
 typedef struct {
   int x, y;
   int speed;
   int animation_frame;
+  int lives;
   SDL_Texture *sprite;
   PlayerDirection direction;
   bool moving;
+  bool dead;
+  bool invincible;
 } Player;
 
 /**
@@ -53,13 +64,5 @@ void player_draw(Player *player, Window *window);
  * @param player Player
  */
 void player_destroy(Player *player);
-
-/**
- * @brief Check if the player is colliding with a wall
- * @param player Player
- * @param window Window
- * @param map Map
- */
-void player_check_collision(Player *player, Window *window, Map *map);
 
 # endif

@@ -94,8 +94,6 @@ void map_render(Map *map, Window *window)
   while (tile != EOF) {
     tile = fgetc(map->map_file);
 
-    printf("%c", tile);
-
     map->map[col][row] = get_tile_from_char(tile);
 
     if (tile != '\n') col++;

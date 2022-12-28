@@ -196,12 +196,20 @@ void window_rotate_texture(Window *window, SDL_Texture *texture, SDL_Rect *rect,
   int w, h;
   SDL_QueryTexture(texture, NULL, NULL, &w, &h);
   SDL_Point center = { w/2, h/2 };
-  SDL_RenderCopyEx(window->renderer, texture, NULL, rect, angle, &center, flip);
+  if (SDL_RenderCopyEx(window->renderer, texture, NULL, rect, angle, &center, flip) != 0) {
+    fprintf(stderr, "Erreur lors du rendu de la texture : %s", SDL_GetError());
+    cleanup(window->window, window->renderer, texture);
+    return;
+  }
 }
 
 
 void window_draw_sprite(Window *window, SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst, double angle, SDL_RendererFlip flip)
 {
   SDL_Point center = { src->w/2, src->h/2 };
-  SDL_RenderCopyEx(window->renderer, texture, src, dst, angle, &center, flip);
+  if (SDL_RenderCopyEx(window->renderer, texture, src, dst, angle, &center, flip) != 0) {
+    fprintf(stderr, "Erreur lors du rendu de la texture : %s", SDL_GetError());
+    cleanup(window->window, window->renderer, texture);
+    return;
+  }
 }

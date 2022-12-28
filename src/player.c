@@ -8,9 +8,6 @@
 #include "map.h"
 #include "map_tile.h"
 
-#define PLAYER_SPEED 2
-#define PLAYER_SIZE 32
-
 Player *player_create(Window *window, int x, int y)
 {
   Player *player = malloc(sizeof(Player));
@@ -22,7 +19,12 @@ Player *player_create(Window *window, int x, int y)
   player->y = y;
   player->speed = PLAYER_SPEED;
   player->direction = PLAYER_NULL;
-  window_load_texture(window, "../assets/sprites/pacman.png", &player->sprite);
+  player->animation_frame = 0;
+  player->moving = false;
+  player->dead = false;
+  player->invincible = false;
+  player->lives = 3;
+  window_load_texture(window, "../assets/sprites/pacman2.png", &player->sprite);
 
   return player;
 }
@@ -102,68 +104,7 @@ void player_update(Player *player, Window *window)
     }
   }
 
-  player->animation_frame++;
-  if (player->animation_frame > 5) {
-    player->animation_frame = 0;
-  }
-}
-
-void player_check_collision(Player *player, Window *window, Map *map)
-{
-  //printf("player->x: %d\n", player->x);
-  //printf("width: %d\n", window->width);
-  if (player->x < 0) {
-    //printf("player->x < 0\n");
-    player->x = window->width - PLAYER_SIZE;
-    return;
-  }
-  if (player->x > window->width - PLAYER_SIZE) {
-    player->x = 0;
-    return;
-  }
-  if (player->y < 0) {
-    player->y = window->height;
-    return;
-  }
-  if (player->y > window->height - PLAYER_SIZE) {
-    player->y = 0;
-    return;
-  }
-
-  int x = floor((player->x + PLAYER_SIZE/2) / MAP_TILE_SIZE);
-  int y = floor((player->y + PLAYER_SIZE/2) / MAP_TILE_SIZE);
-
-  for (int x = 0; x < map->cols; x++) {
-    for (int y = 0; y < map->rows; y++) {
-      if (map->map[x][y] != TILE_SPACE && map->map[x][y] != TILE_DOT) {
-        float dx = player->x - x * MAP_TILE_SIZE;
-        float dy = player->y - y * MAP_TILE_SIZE;
-
-        if (dx*dx + dy*dy < MAP_TILE_SIZE*MAP_TILE_SIZE/2) {
-          player->moving = false;
-        }
-      }
-    }
-  }
-
-  if (map->map[x][y] != TILE_SPACE && map->map[x][y] != TILE_DOT) {
-    if (player->direction == PLAYER_UP) {
-      player->y = (y + 1) * MAP_TILE_SIZE;
-    }
-    if (player->direction == PLAYER_DOWN) {
-      player->y = (y - 1) * MAP_TILE_SIZE;
-    }
-    if (player->direction == PLAYER_LEFT) {
-      player->x = (x + 1) * MAP_TILE_SIZE;
-    }
-    if (player->direction == PLAYER_RIGHT) {
-      player->x = (x - 1) * MAP_TILE_SIZE;
-    }
-    player->moving = false;
-    //player->direction = PLAYER_NULL;
-  }
-
-  if (map->map[x][y] == TILE_DOT) {
-    map->map[x][y] = TILE_SPACE;
+  if (player->moving) {
+    player->animation_frame = (player->animation_frame + 1) % 6;
   }
 }
