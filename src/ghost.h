@@ -8,7 +8,7 @@
 #include "map.h"
 #include "player.h"
 
-#define GHOST_SPEED 1
+#define GHOST_SPEED 4
 #define GHOST_SIZE 32
 
 typedef enum {
@@ -47,10 +47,11 @@ void ghost_destroy(Ghost *ghost);
 
 /**
  * @brief Update the ghost
+ * @param map The map to update the ghost in
  * @param ghost The ghost to update
- * @param window The window to update the ghost in
+ * @param player The player to update the ghost towards
  */
-void ghost_update(Ghost *ghost, Window *window);
+void ghost_update(Map *map, Ghost *ghost, Player *player);
 
 /**
  * @brief Render the ghost
@@ -62,10 +63,10 @@ void ghost_render(Ghost *ghost, Window *window);
 /**
  * @brief Move the ghost
  * @param ghost The ghost to move
- * @param window The window to move the ghost in
+ * @param player The player to move the ghost towards
  * @param map The map to move the ghost in
  */
-void ghost_move(Ghost *ghost, Window *window, Map *map);
+void ghost_move(Ghost *ghost, Player *player, Map *map);
 
 /**
  * @brief Reset the ghost
@@ -87,5 +88,7 @@ bool ghost_check_collision(Ghost *ghost, Player *player);
  * @param window The window to animate the ghost in
  */
 void ghost_animation(Ghost *ghost, Window *window);
+
+GhostDirection ghost_get_direction(Map *map, Ghost *ghost, Player *player);
 
 # endif

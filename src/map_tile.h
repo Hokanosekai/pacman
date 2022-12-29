@@ -59,4 +59,6 @@ typedef enum {
   TILE_POWER_UP = 26,
 } Tiles;
 
+bool tile_is_accessible(Tiles tile);
+
 # endif

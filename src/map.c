@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 #include "map.h"
 #include "window.h"
 #include "map_tile.h"
@@ -195,5 +197,52 @@ void map_render(Map *map, Window *window)
       dst = (SDL_Rect) { x * MAP_TILE_SIZE, y * MAP_TILE_SIZE, MAP_TILE_SIZE, MAP_TILE_SIZE };
       window_draw_texture(window, map->tile_map, &src, &dst);
     }
+  }
+}
+
+Tiles map_get_tile(Map *map, int x, int y)
+{
+  if (map == NULL) {
+    return TILE_SPACE;
+  }
+
+  if (x < 0 || x % MAP_TILE_SIZE >= map->cols || y < 0 || y % MAP_TILE_SIZE >= map->rows) {
+    return TILE_SPACE;
+  }
+
+  return map->map[x % MAP_TILE_SIZE][y % MAP_TILE_SIZE];
+}
+
+bool map_check_collision(Map *map, int x, int y)
+{
+  if (map == NULL) {
+    return false;
+  }
+
+  if (x < 0 || x % MAP_TILE_SIZE >= map->cols || y < 0 || y % MAP_TILE_SIZE >= map->rows) {
+    return false;
+  }
+
+  Tiles tile = map->map[x % MAP_TILE_SIZE][y % MAP_TILE_SIZE];
+
+  switch (tile) {
+    case TILE_SPACE:
+    case TILE_DOT:
+    case TILE_POWER_UP:
+      return false;
+    default:
+      return true;
+  }
+}
+
+bool tile_is_accessible(Tiles tile)
+{
+  switch (tile) {
+    case TILE_SPACE:
+    case TILE_DOT:
+    case TILE_POWER_UP:
+      return true;
+    default:
+      return false;
   }
 }

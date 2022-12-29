@@ -7,7 +7,7 @@
 #include "map.h"
 #include "ghost.h"
 
-#define GHOST_AMOUNT 4
+#define GHOST_AMOUNT 1
 
 typedef struct {
     int width;

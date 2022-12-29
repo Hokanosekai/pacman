@@ -44,9 +44,9 @@ Game *game_create(int width, int height, int scale)
   game->player = player_create(game->window, PLAYER_START_X * MAP_TILE_SIZE, PLAYER_START_Y * MAP_TILE_SIZE);
 
   // init ghost
-  for (size_t i = 0; i < 4; i++)
+  for (int i = 0; i < GHOST_AMOUNT; i++)
   {
-    game->ghosts[i] = ghost_create(game->window, 2 * MAP_TILE_SIZE, i * MAP_TILE_SIZE, i+1);
+    game->ghosts[i] = ghost_create(game->window, 1 * MAP_TILE_SIZE, (i+1) * MAP_TILE_SIZE, i+1);
   }
   
   return game;
@@ -60,6 +60,10 @@ void game_destroy(Game *game)
 
   window_destroy(game->window);
   player_destroy(game->player);
+  for (int i = 0; i < GHOST_AMOUNT; i++)
+  {
+    ghost_destroy(game->ghosts[i]);
+  }
   map_destroy(game->map);
   free(game);
 }
@@ -89,9 +93,9 @@ void game_run(Game *game)
     game_check_collision(game);
     player_update(game->player, game->window);
 
-    for (size_t i = 0; i < 4; i++)
+    for (int i = 0; i < GHOST_AMOUNT; i++)
     {
-      ghost_update(game->ghosts[i], game->window);
+      ghost_update(game->map, game->ghosts[i], game->player);
     }
 
     switch ((int)game->state)
@@ -132,12 +136,32 @@ void game_check_collision(Game *game)
     return;
   }
   if (player->y < 0) {
-    player->y = window->height;
+    player->y = window->height - PLAYER_SIZE;
     return;
   }
   if (player->y > window->height - PLAYER_SIZE) {
     player->y = 0;
     return;
+  }
+
+  for (int i = 0; i < GHOST_AMOUNT; i++) {
+    Ghost *ghost = game->ghosts[i];
+    if (ghost->x < 0) {
+      ghost->x = window->width - GHOST_SIZE;
+      return;
+    }
+    if (ghost->x > window->width - GHOST_SIZE) {
+      ghost->x = 0;
+      return;
+    }
+    if (ghost->y < 0) {
+      ghost->y = window->height - GHOST_SIZE;
+      return;
+    }
+    if (ghost->y > window->height - GHOST_SIZE) {
+      ghost->y = 0;
+      return;
+    }
   }
 
   int x = floor((player->x + PLAYER_SIZE/2) / MAP_TILE_SIZE);
@@ -234,6 +258,7 @@ void game_state_menu_draw(Game *game)
   for (int i = 0; i < GHOST_AMOUNT; i++)
   {
     ghost_render(game->ghosts[i], game->window);
+    ghost_move(game->ghosts[i], game->player, game->map);
     if (game->player->invincible) {
       ghost_animation(game->ghosts[i], game->window);
     } else {
