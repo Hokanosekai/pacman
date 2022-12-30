@@ -22,6 +22,7 @@ Ghost *ghost_create(Window *window, int x, int y, int ghost_number)
   ghost->speed = GHOST_SPEED;
   ghost->direction = GHOST_NULL;
   ghost->animation_frame = 0;
+  ghost->animation_timer = 0;
   ghost->is_active = false;
   ghost->moving = false;
 
@@ -53,7 +54,15 @@ void ghost_render(Ghost *ghost, Window *window)
 
 void ghost_update(Map *map, Ghost *ghost, Player *player)
 {
-  ghost->animation_frame = (ghost->animation_frame + 1) % 6;
+  // Update ghost animation
+  ghost->animation_timer++;
+  if (ghost->animation_timer > GHOST_ANIMATION_SPEED) {
+    ghost->animation_timer = 0;
+    ghost->animation_frame++;
+    if (ghost->animation_frame > GHOST_FRAMES - 1) {
+      ghost->animation_frame = 0;
+    }
+  }
 
   // Update ghost direction
   ghost->direction = ghost_get_direction(map, ghost, player);
@@ -61,13 +70,28 @@ void ghost_update(Map *map, Ghost *ghost, Player *player)
 
 void ghost_reset(Ghost *ghost)
 {
-  ghost->x = 3 * MAP_TILE_SIZE;
-  ghost->y = 7 * MAP_TILE_SIZE;
+  ghost_move_to_spawn(ghost);
   ghost->speed = GHOST_SPEED;
   ghost->direction = GHOST_NULL;
   ghost->animation_frame = 0;
   ghost->is_active = false;
   ghost->moving = false;
+}
+
+void ghost_activate(Ghost *ghost)
+{
+  ghost->is_active = true;
+}
+
+void ghost_deactivate(Ghost *ghost)
+{
+  ghost->is_active = false;
+}
+
+void ghost_move_to_spawn(Ghost *ghost)
+{
+  ghost->x = GHOST_SPAWN_X * MAP_TILE_SIZE;
+  ghost->y = GHOST_SPAWN_Y * MAP_TILE_SIZE;
 }
 
 bool ghost_check_collision(Ghost *ghost, Player *player)
@@ -136,6 +160,7 @@ GhostDirection ghost_get_direction(Map *map, Ghost *ghost, Player *player)
   Tiles left = map_get_tile(map, x - 1, y);
   Tiles right = map_get_tile(map, x + 1, y);
 
+  // up, down, left, right
   int dir_table[4] = {0, 0, 0, 0};
 
   if (tile_is_accessible(up)) dir_table[0] = 1;
@@ -143,11 +168,11 @@ GhostDirection ghost_get_direction(Map *map, Ghost *ghost, Player *player)
   if (tile_is_accessible(left)) dir_table[2] = 1;
   if (tile_is_accessible(right)) dir_table[3] = 1;
 
-  printf("table: ");
+  /*printf("table: ");
   for (int i = 0; i < 4; i++) {
     printf("%d ", dir_table[i]);
   }
-  printf("\n");
+  printf("\n");*/
 
   if (rand() % 100 < 5) {
     int rand_dir = rand() % 4;

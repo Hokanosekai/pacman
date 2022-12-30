@@ -7,7 +7,7 @@
 #include "map.h"
 #include "ghost.h"
 
-#define GHOST_AMOUNT 1
+#define GHOST_AMOUNT 4
 
 typedef struct {
     int width;
@@ -20,6 +20,7 @@ typedef struct {
     Player *player;
     Map *map;
     Ghost *ghosts[GHOST_AMOUNT];
+    SDL_Texture *heart_texture;
 } Game;
 
 /**

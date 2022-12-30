@@ -10,10 +10,6 @@
 #define _XOPEN_SOURCE 500
 #define FPS 60
 
-#define PLAYER_START_X 5
-#define PLAYER_START_Y 5
-
-
 Game *game_create(int width, int height, int scale)
 {
   Game *game = malloc(sizeof(*game));
@@ -22,12 +18,18 @@ Game *game_create(int width, int height, int scale)
     return NULL;
   }
 
+  game->width = width;
+  game->height = height;
+
   // init game window for rendering
-  game->window = window_create("Pacman", 640, 480);
+  game->window = window_create("Pacman", width, height);
   window_load_font(game->window, "../assets/fonts/OpenSans.ttf", 16);
   if (game->window == NULL) {
     return NULL;
   }
+
+  // loading textures
+  window_load_texture(game->window, "../assets/sprites/heart.png", &game->heart_texture);
 
   // init map
   game->map = map_init(game->window, "../assets/maps/map1.txt", "../assets/textures/tiles5.png");
@@ -37,11 +39,11 @@ Game *game_create(int width, int height, int scale)
 
   // init game score
   game->score = 0;
-
   // init game state
   game->state = STATE_MENU;
+
   // init player
-  game->player = player_create(game->window, PLAYER_START_X * MAP_TILE_SIZE, PLAYER_START_Y * MAP_TILE_SIZE);
+  game->player = player_create(game->window, PLAYER_SPAWN_X * MAP_TILE_SIZE, PLAYER_SPAWN_Y * MAP_TILE_SIZE);
 
   // init ghost
   for (int i = 0; i < GHOST_AMOUNT; i++)
@@ -86,12 +88,14 @@ void game_run(Game *game)
       }
     }
 
+    // clear window
     window_clear(game->window);
-    
+    // render map
     map_render(game->map, game->window);
-
+    // check collision
     game_check_collision(game);
-    player_update(game->player, game->window);
+
+    player_update(game->map, game->player);
 
     for (int i = 0; i < GHOST_AMOUNT; i++)
     {
@@ -253,7 +257,8 @@ void game_state_menu_draw(Game *game)
   display_score(game);
   display_lives(game);
 
-  player_draw(game->player, game->window);
+  player_render(game->player, game->window);
+  player_move(game->player);
 
   for (int i = 0; i < GHOST_AMOUNT; i++)
   {
@@ -280,10 +285,8 @@ void display_score(Game *game)
 void display_lives(Game *game)
 {
   for (int i = game->player->lives; i > 0; i--) {
-    SDL_Texture *hearth;
-    window_load_texture(game->window, "../assets/sprites/hearth.png", &hearth);
-    SDL_Rect rect = { 640 - (MAP_TILE_SIZE * i), 0, 32, 32 };
-    window_draw_texture(game->window, hearth, NULL, &rect);
+    SDL_Rect rect = { game->width - (MAP_TILE_SIZE * i), 0, 32, 32 };
+    window_draw_texture(game->window, game->heart_texture, NULL, &rect);
   }
 }
 

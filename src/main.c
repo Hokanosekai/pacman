@@ -7,8 +7,8 @@
 #include "game.h"
 #include "game_state.h"
 
-#define WINDOW_WIDTH 640
-#define WINDOW_HEIGHT 480
+#define WINDOW_WIDTH 1120
+#define WINDOW_HEIGHT 800
 #define WINDOW_SCALE 1
 
 

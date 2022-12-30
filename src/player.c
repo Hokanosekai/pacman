@@ -23,7 +23,7 @@ Player *player_create(Window *window, int x, int y)
   player->moving = false;
   player->dead = false;
   player->invincible = false;
-  player->lives = 3;
+  player->lives = PLAYER_LIVES;
   player->invincible_timer = 0;
   player->number_of_dots_eaten = 0;
   player->number_of_power_pellets_eaten = 0;
@@ -33,7 +33,7 @@ Player *player_create(Window *window, int x, int y)
   return player;
 }
 
-void player_draw(Player *player, Window *window)
+void player_render(Player *player, Window *window)
 {
   SDL_Rect rect = {player->x, player->y, PLAYER_SIZE, PLAYER_SIZE};
   SDL_Rect src = {PLAYER_SIZE * player->animation_frame, 0, PLAYER_SIZE, PLAYER_SIZE};
@@ -53,7 +53,6 @@ void player_draw(Player *player, Window *window)
   if (player->direction == PLAYER_NULL) {
     window_draw_sprite(window, player->sprite, &src, &rect, 0.0, SDL_FLIP_NONE);
   }
-  
 }
 
 void player_destroy(Player *player)
@@ -66,29 +65,78 @@ void player_destroy(Player *player)
   free(player);
 }
 
-void player_update(Player *player, Window *window)
+void player_set_direction(Player *player, PlayerDirection direction)
 {
+  player->direction = direction;
+}
+
+void player_update(Map *map, Player *player)
+{
+  int x = player->x / MAP_TILE_SIZE;
+  int y = player->y / MAP_TILE_SIZE;
+
+  Tiles up = map_get_tile(map, x, y - 1);
+  Tiles down = map_get_tile(map, x, y + 1);
+  Tiles left = map_get_tile(map, x - 1, y);
+  Tiles right = map_get_tile(map, x + 1, y);
+
+  /*int up_distance = abs(player->y - (y * MAP_TILE_SIZE));
+  int down_distance = abs(player->y - (y * MAP_TILE_SIZE));
+  int left_distance = abs(player->x - (x * MAP_TILE_SIZE));
+  int right_distance = abs(player->x - (x * MAP_TILE_SIZE));*/
+
+  // up, down, left, right
+  int dir_table[4] = { 0, 0, 0, 0 };
+
+  if (tile_is_accessible(up)) dir_table[0] = 1;
+  if (tile_is_accessible(down)) dir_table[1] = 1;
+  if (tile_is_accessible(left)) dir_table[2] = 1;
+  if (tile_is_accessible(right)) dir_table[3] = 1;
+
   const Uint8 *state = SDL_GetKeyboardState(NULL);
-  if (state[SDL_SCANCODE_UP]) {
-    player->direction = PLAYER_UP;
+  if (state[SDL_SCANCODE_UP] && dir_table[0] == 1) {
+    player_set_direction(player, PLAYER_UP);
     player->moving = true;
   }
-  if (state[SDL_SCANCODE_DOWN]) {
-    player->direction = PLAYER_DOWN;
+  if (state[SDL_SCANCODE_DOWN] && dir_table[1] == 1) {
+    player_set_direction(player, PLAYER_DOWN);
     player->moving = true;
   }
-  if (state[SDL_SCANCODE_LEFT]) {
-    player->direction = PLAYER_LEFT;
+  if (state[SDL_SCANCODE_LEFT] && dir_table[2] == 1) {
+    player_set_direction(player, PLAYER_LEFT);
     player->moving = true;
   }
-  if (state[SDL_SCANCODE_RIGHT]) {
-    player->direction = PLAYER_RIGHT;
+  if (state[SDL_SCANCODE_RIGHT] && dir_table[3] == 1) {
+    player_set_direction(player, PLAYER_RIGHT);
     player->moving = true;
   }
   if (state[SDL_SCANCODE_SPACE]) {
     player->moving = false;
   }
 
+  // update player animation
+  if (player->moving) {
+    player->animation_timer++;
+    if (player->animation_timer > PLAYER_ANIMATION_SPEED) {
+      player->animation_timer = 0;
+      player->animation_frame++;
+      if (player->animation_frame > PLAYER_FRAMES - 1) {
+        player->animation_frame = 0;
+      }
+    }
+  }
+
+  if (player->invincible) {
+    player->invincible_timer++;
+    if (player->invincible_timer > PLAYER_INVINCIBLE_TIME) {
+      player->invincible = false;
+      player->invincible_timer = 0;
+    }
+  }
+}
+
+void player_move(Player *player)
+{
   if (player->moving) {
     switch (player->direction) {
       case PLAYER_UP:
@@ -107,25 +155,17 @@ void player_update(Player *player, Window *window)
         break;
     }
   }
+}
 
-  if (player->moving) {
-    player->animation_frame = (player->animation_frame + 1) % 6;
-  }
-
-  if (player->invincible) {
-    player->invincible_timer++;
-    if (player->invincible_timer > 300) {
-      player->invincible = false;
-      player->invincible_timer = 0;
-    }
-  }
+void player_move_to_spawn(Player *player)
+{
+  player->x = PLAYER_SPAWN_X * MAP_TILE_SIZE;
+  player->y = PLAYER_SPAWN_Y * MAP_TILE_SIZE;
+  player->direction = PLAYER_NULL;
 }
 
 void player_reset(Player *player)
 {
-  player->x = 5 * MAP_TILE_SIZE;
-  player->y = 5 * MAP_TILE_SIZE;
-  player->direction = PLAYER_NULL;
   player->animation_frame = 0;
   player->moving = false;
   player->dead = false;
@@ -134,4 +174,5 @@ void player_reset(Player *player)
   player->number_of_dots_eaten = 0;
   player->number_of_power_pellets_eaten = 0;
   player->number_of_ghosts_eaten = 0;
+  player_move_to_spawn(player);
 }

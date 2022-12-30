@@ -98,7 +98,7 @@ void map_render(Map *map, Window *window)
 
     map->map[col][row] = get_tile_from_char(tile);
 
-    if (tile != '\n') col++;
+    if (tile != '\n' && tile != ' ') col++;
     if (col == map->cols) {
       col = 0;
       row++;
@@ -206,11 +206,11 @@ Tiles map_get_tile(Map *map, int x, int y)
     return TILE_SPACE;
   }
 
-  if (x < 0 || x % MAP_TILE_SIZE >= map->cols || y < 0 || y % MAP_TILE_SIZE >= map->rows) {
+  if (x < 0 || x >= map->cols || y < 0 || y >= map->rows) {
     return TILE_SPACE;
   }
 
-  return map->map[x % MAP_TILE_SIZE][y % MAP_TILE_SIZE];
+  return map->map[x][y];
 }
 
 bool map_check_collision(Map *map, int x, int y)

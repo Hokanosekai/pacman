@@ -11,6 +11,12 @@
 #define GHOST_SPEED 4
 #define GHOST_SIZE 32
 
+#define GHOST_SPAWN_X 18
+#define GHOST_SPAWN_Y 11
+
+#define GHOST_ANIMATION_SPEED 10
+#define GHOST_FRAMES 6
+
 typedef enum {
     GHOST_UP,
     GHOST_DOWN,
@@ -22,7 +28,7 @@ typedef enum {
 typedef struct {
   int x, y;
   int speed;
-  int animation_frame;
+  int animation_frame, animation_timer;
   GhostDirection direction;
   SDL_Texture *sprite;
   bool moving;
@@ -89,6 +95,31 @@ bool ghost_check_collision(Ghost *ghost, Player *player);
  */
 void ghost_animation(Ghost *ghost, Window *window);
 
+/**
+ * @brief Get the direction of the ghost
+ * @param map The map to get the direction in
+ * @param ghost The ghost to get the direction of
+ * @param player The player to get the direction towards
+ * @return The direction of the ghost
+ */
 GhostDirection ghost_get_direction(Map *map, Ghost *ghost, Player *player);
+
+/**
+ * @brief Activate the ghost
+ * @param ghost The ghost to activate
+ */
+void ghost_activate(Ghost *ghost);
+
+/**
+ * @brief Deactivate the ghost
+ * @param ghost The ghost to deactivate
+ */
+void ghost_deactivate(Ghost *ghost);
+
+/**
+ * @brief Move the ghost to the spawn
+ * @param ghost The ghost to move
+ */
+void ghost_move_to_spawn(Ghost *ghost);
 
 # endif
