@@ -29,10 +29,18 @@ Game *game_create(int width, int height, int scale)
   }
 
   // loading textures
-  window_load_texture(game->window, "../assets/sprites/heart.png", &game->heart_texture);
+  window_load_texture(
+    game->window, 
+    "../assets/sprites/heart.png", 
+    &game->heart_texture
+  );
 
   // init map
-  game->map = map_init(game->window, "../assets/maps/map1.txt", "../assets/textures/tiles5.png");
+  game->map = map_init(
+    game->window, 
+    "../assets/maps/map1.txt", 
+    "../assets/textures/tiles5.png"
+  );
   if (game->map == NULL) {
     return NULL;
   }
@@ -43,12 +51,12 @@ Game *game_create(int width, int height, int scale)
   game->state = STATE_MENU;
 
   // init player
-  game->player = player_create(game->window, PLAYER_SPAWN_X * MAP_TILE_SIZE, PLAYER_SPAWN_Y * MAP_TILE_SIZE);
+  game->player = player_create(game->window);
 
   // init ghost
   for (int i = 0; i < GHOST_AMOUNT; i++)
   {
-    game->ghosts[i] = ghost_create(game->window, 1 * MAP_TILE_SIZE, (i+1) * MAP_TILE_SIZE, i+1);
+    game->ghosts[i] = ghost_create(game->window, i+1);
   }
   
   return game;
@@ -94,14 +102,7 @@ void game_run(Game *game)
     map_render(game->map, game->window);
     // check collision
     game_check_collision(game);
-
-    player_update(game->map, game->player);
-
-    for (int i = 0; i < GHOST_AMOUNT; i++)
-    {
-      ghost_update(game->map, game->ghosts[i], game->player);
-    }
-
+    
     switch ((int)game->state)
     {
       case STATE_MENU:
@@ -117,9 +118,10 @@ void game_run(Game *game)
         break;
     }
 
+    // update window
     window_update(game->window);
 
-    //SDL_Delay(10);
+    SDL_Delay(10);
     usleep(1000 * 1000 / FPS);
   }
 }
@@ -131,20 +133,24 @@ void game_check_collision(Game *game)
   Player *player = game->player;
   Window *window = game->window;
 
-  if (player->x < 0) {
-    player->x = window->width - PLAYER_SIZE;
+  if (player->next_x < 0) {
+    player->next_x = window->width - PLAYER_SIZE;
+    player->x = player->next_x;;
     return;
   }
-  if (player->x > window->width - PLAYER_SIZE) {
-    player->x = 0;
+  if (player->next_x > window->width - PLAYER_SIZE) {
+    player->next_x = 0;
+    player->x = player->next_x;
     return;
   }
-  if (player->y < 0) {
-    player->y = window->height - PLAYER_SIZE;
+  if (player->next_y < 0) {
+    player->next_y = window->height - PLAYER_SIZE;
+    player->y = player->next_y;
     return;
   }
-  if (player->y > window->height - PLAYER_SIZE) {
-    player->y = 0;
+  if (player->next_y > window->height - PLAYER_SIZE) {
+    player->next_y = 0;
+    player->y = player->next_y;
     return;
   }
 
@@ -168,10 +174,10 @@ void game_check_collision(Game *game)
     }
   }
 
-  int x = floor((player->x + PLAYER_SIZE/2) / MAP_TILE_SIZE);
-  int y = floor((player->y + PLAYER_SIZE/2) / MAP_TILE_SIZE);
+  int x = (player->x + PLAYER_SIZE/2) / MAP_TILE_SIZE;
+  int y = (player->y + PLAYER_SIZE/2) / MAP_TILE_SIZE;
 
-  for (int x = 0; x < map->cols; x++) {
+  /*for (int x = 0; x < map->cols; x++) {
     for (int y = 0; y < map->rows; y++) {
       if (map->map[x][y] != TILE_SPACE && map->map[x][y] != TILE_DOT && map->map[x][y] != TILE_POWER_UP) {
         float dx = player->x - x * MAP_TILE_SIZE;
@@ -193,31 +199,20 @@ void game_check_collision(Game *game)
         }
       }
     }
-  }
+  }*/
 
-  if (map->map[x][y] != TILE_SPACE && map->map[x][y] != TILE_DOT && map->map[x][y] != TILE_POWER_UP) {
-    if (player->direction == PLAYER_UP) {
-      player->y = (y + 1) * MAP_TILE_SIZE;
-    }
-    if (player->direction == PLAYER_DOWN) {
-      player->y = (y - 1) * MAP_TILE_SIZE;
-    }
-    if (player->direction == PLAYER_LEFT) {
-      player->x = (x + 1) * MAP_TILE_SIZE;
-    }
-    if (player->direction == PLAYER_RIGHT) {
-      player->x = (x - 1) * MAP_TILE_SIZE;
-    }
-    player->moving = false;
-  }
+  // check player collision with wall tile
+  Tiles tile = map_get_tile(map, x, y);
 
-  if (map->map[x][y] == TILE_DOT) {
+  // check player collision with dot tile
+  if (tile == TILE_DOT) {
     map->map[x][y] = TILE_SPACE;
     game->score += 10;
     game->player->number_of_dots_eaten++;
   }
 
-  if (map->map[x][y] == TILE_POWER_UP) {
+  // check player collision with power up tile
+  if (tile == TILE_POWER_UP) {
     map->map[x][y] = TILE_SPACE;
     game->score += 50;
     game->player->invincible = true;
@@ -226,6 +221,7 @@ void game_check_collision(Game *game)
     game->player->number_of_power_pellets_eaten++;
   }
 
+  // check player collision with ghosts
   for (int i = 0; i < GHOST_AMOUNT; i++) {
     if (ghost_check_collision(game->ghosts[i], player)) {
       if (player->invincible) {
@@ -257,13 +253,18 @@ void game_state_menu_draw(Game *game)
   display_score(game);
   display_lives(game);
 
+  player_update(game->map, game->player);
+  for (int i = 0; i < GHOST_AMOUNT; i++) {
+    ghost_update(game->map, game->ghosts[i], game->player);
+  }
+
   player_render(game->player, game->window);
-  player_move(game->player);
+  //player_move(game->player);
 
   for (int i = 0; i < GHOST_AMOUNT; i++)
   {
     ghost_render(game->ghosts[i], game->window);
-    ghost_move(game->ghosts[i], game->player, game->map);
+    //ghost_move(game->ghosts[i], game->player, game->map);
     if (game->player->invincible) {
       ghost_animation(game->ghosts[i], game->window);
     } else {

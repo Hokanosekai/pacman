@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <unistd.h>
 
 #include "player.h"
 #include "window.h"
@@ -8,17 +9,18 @@
 #include "map.h"
 #include "map_tile.h"
 
-Player *player_create(Window *window, int x, int y)
+Player *player_create(Window *window)
 {
   Player *player = malloc(sizeof(Player));
   if (player == NULL) {
     return NULL;
   }
 
-  player->x = x;
-  player->y = y;
+  player_move_to_spawn(player);
   player->speed = PLAYER_SPEED;
+  player->speed_timer = 0;
   player->direction = PLAYER_NULL;
+  player->next_direction = PLAYER_NULL;
   player->animation_frame = 0;
   player->moving = false;
   player->dead = false;
@@ -72,57 +74,64 @@ void player_set_direction(Player *player, PlayerDirection direction)
 
 void player_update(Map *map, Player *player)
 {
-  int x = player->x / MAP_TILE_SIZE;
-  int y = player->y / MAP_TILE_SIZE;
+  const Uint8 *state = SDL_GetKeyboardState(NULL);
 
-  Tiles up = map_get_tile(map, x, y - 1);
-  Tiles down = map_get_tile(map, x, y + 1);
-  Tiles left = map_get_tile(map, x - 1, y);
-  Tiles right = map_get_tile(map, x + 1, y);
+  if (state[SDL_SCANCODE_UP]) player->next_direction = PLAYER_UP;
+  if (state[SDL_SCANCODE_DOWN]) player->next_direction = PLAYER_DOWN;
+  if (state[SDL_SCANCODE_LEFT]) player->next_direction = PLAYER_LEFT;
+  if (state[SDL_SCANCODE_RIGHT]) player->next_direction = PLAYER_RIGHT;
+  if (state[SDL_SCANCODE_SPACE]) player->next_direction = PLAYER_NULL;
 
+  int next_x = player->next_x / MAP_TILE_SIZE;
+  int next_y = player->next_y / MAP_TILE_SIZE;
+
+  switch (player->next_direction)
+  {
+    case PLAYER_UP:
+      next_y--;
+      break;
+    case PLAYER_DOWN:
+      next_y++;
+      break;
+    case PLAYER_LEFT:
+      next_x--;
+      break;
+    case PLAYER_RIGHT:
+      next_x++;
+      break;
+    default:
+      break;
+  }
+
+  Tiles next_tile = map_get_tile(map, next_x, next_y);
+  
   /*int up_distance = abs(player->y - (y * MAP_TILE_SIZE));
   int down_distance = abs(player->y - (y * MAP_TILE_SIZE));
   int left_distance = abs(player->x - (x * MAP_TILE_SIZE));
   int right_distance = abs(player->x - (x * MAP_TILE_SIZE));*/
 
-  // up, down, left, right
-  int dir_table[4] = { 0, 0, 0, 0 };
-
-  if (tile_is_accessible(up)) dir_table[0] = 1;
-  if (tile_is_accessible(down)) dir_table[1] = 1;
-  if (tile_is_accessible(left)) dir_table[2] = 1;
-  if (tile_is_accessible(right)) dir_table[3] = 1;
-
-  const Uint8 *state = SDL_GetKeyboardState(NULL);
-  if (state[SDL_SCANCODE_UP] && dir_table[0] == 1) {
-    player_set_direction(player, PLAYER_UP);
+  if (tile_is_accessible(next_tile)) {
+    player->direction = player->next_direction;
+    player->next_x = next_x * MAP_TILE_SIZE;
+    player->next_y = next_y * MAP_TILE_SIZE;
     player->moving = true;
-  }
-  if (state[SDL_SCANCODE_DOWN] && dir_table[1] == 1) {
-    player_set_direction(player, PLAYER_DOWN);
-    player->moving = true;
-  }
-  if (state[SDL_SCANCODE_LEFT] && dir_table[2] == 1) {
-    player_set_direction(player, PLAYER_LEFT);
-    player->moving = true;
-  }
-  if (state[SDL_SCANCODE_RIGHT] && dir_table[3] == 1) {
-    player_set_direction(player, PLAYER_RIGHT);
-    player->moving = true;
-  }
-  if (state[SDL_SCANCODE_SPACE]) {
+  } else {
+    player->next_x = player->x;
+    player->next_y = player->y;
     player->moving = false;
   }
 
   // update player animation
-  if (player->moving) {
-    player->animation_timer++;
-    if (player->animation_timer > PLAYER_ANIMATION_SPEED) {
-      player->animation_timer = 0;
+  player->animation_timer += 1;
+  if (player->animation_timer > PLAYER_ANIMATION_SPEED) {
+    player->animation_timer = 0;
+    if (player->moving) {
       player->animation_frame++;
       if (player->animation_frame > PLAYER_FRAMES - 1) {
         player->animation_frame = 0;
       }
+    } else {
+      player->animation_frame = 0;
     }
   }
 
@@ -137,22 +146,14 @@ void player_update(Map *map, Player *player)
 
 void player_move(Player *player)
 {
-  if (player->moving) {
-    switch (player->direction) {
-      case PLAYER_UP:
-        player->y -= player->speed;
-        break;
-      case PLAYER_DOWN:
-        player->y += player->speed;
-        break;
-      case PLAYER_LEFT:
-        player->x -= player->speed;
-        break;
-      case PLAYER_RIGHT:
-        player->x += player->speed;
-        break;
-      default:
-        break;
+  if (player->direction != PLAYER_NULL) {
+    player->speed_timer++;
+    if (player->speed_timer > PLAYER_SPEED) {
+      player->speed_timer = 0;
+      if (player->x < player->next_x) player->x++;
+      if (player->x > player->next_x) player->x--;
+      if (player->y < player->next_y) player->y++;
+      if (player->y > player->next_y) player->y--;
     }
   }
 }
@@ -161,6 +162,9 @@ void player_move_to_spawn(Player *player)
 {
   player->x = PLAYER_SPAWN_X * MAP_TILE_SIZE;
   player->y = PLAYER_SPAWN_Y * MAP_TILE_SIZE;
+  player->moving = false;
+  player->next_x = player->x;
+  player->next_y = player->y;
   player->direction = PLAYER_NULL;
 }
 

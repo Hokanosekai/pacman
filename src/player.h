@@ -8,13 +8,13 @@
 #include "window.h"
 #include "map.h"
 
-#define PLAYER_SPEED 2
+#define PLAYER_SPEED 1
 #define PLAYER_SIZE 32
 
-#define PLAYER_SPAWN_X 18
-#define PLAYER_SPAWN_Y 23
+#define PLAYER_SPAWN_X 17
+#define PLAYER_SPAWN_Y 22
 
-#define PLAYER_ANIMATION_SPEED 0
+#define PLAYER_ANIMATION_SPEED 3
 #define PLAYER_INVINCIBLE_TIME 300
 #define PLAYER_LIVES 3
 #define PLAYER_FRAMES 6
@@ -29,11 +29,12 @@ typedef enum {
 
 typedef struct {
   int x, y;
-  int speed;
+  int next_x, next_y;
+  int speed, speed_timer;
   int animation_frame, animation_timer;
   int lives;
   SDL_Texture *sprite;
-  PlayerDirection direction;
+  PlayerDirection direction, next_direction;
   bool moving;
   bool dead;
   bool invincible;
@@ -46,11 +47,9 @@ typedef struct {
 /**
  * @brief Create a Player object
  * @param window Window
- * @param x Player x position
- * @param y Player y position
  * @return Player*
  */
-Player *player_create(Window *window, int x, int y);
+Player *player_create(Window *window);
 
 /**
  * @brief Update the Player object

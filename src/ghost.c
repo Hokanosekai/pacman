@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "ghost.h"
 #include "window.h"
@@ -10,17 +11,17 @@
 #include "map_tile.h"
 #include "player.h"
 
-Ghost *ghost_create(Window *window, int x, int y, int ghost_number)
+Ghost *ghost_create(Window *window, int ghost_number)
 {
   Ghost *ghost = malloc(sizeof(Ghost));
   if (ghost == NULL) {
     return NULL;
   }
 
-  ghost->x = x;
-  ghost->y = y;
+  ghost_move_to_spawn(ghost);
   ghost->speed = GHOST_SPEED;
-  ghost->direction = GHOST_NULL;
+  ghost->direction = GHOST_UP;
+  ghost->next_direction = GHOST_UP;
   ghost->animation_frame = 0;
   ghost->animation_timer = 0;
   ghost->is_active = false;
@@ -64,8 +65,157 @@ void ghost_update(Map *map, Ghost *ghost, Player *player)
     }
   }
 
+
+  // Update ghost position
+  int next_x = ghost->next_x / MAP_TILE_SIZE;
+  int next_y = ghost->next_y / MAP_TILE_SIZE;
+
+  Tiles next_up = map_get_tile(map, next_x, next_y - 1);
+  Tiles next_down = map_get_tile(map, next_x, next_y + 1);
+  Tiles next_left = map_get_tile(map, next_x - 1, next_y);
+  Tiles next_right = map_get_tile(map, next_x + 1, next_y);
+
+  int table[4] = {0, 0, 0, 0};
+
+  if (tile_is_accessible(next_up)) table[0] = 1;
+  if (tile_is_accessible(next_down)) table[1] = 1;
+  if (tile_is_accessible(next_left)) table[2] = 1;
+  if (tile_is_accessible(next_right)) table[3] = 1;
+
+  table[ghost->direction] = 0;
+
+  int sum = table[0] + table[1] + table[2] + table[3];
+
+  for (int i = 0; i < 4; i++) {
+    printf("%d ", table[i]);
+  }
+  printf("\n");
+
+
+
   // Update ghost direction
-  ghost->direction = ghost_get_direction(map, ghost, player);
+  if (!ghost->moving && sum > 1) {
+    ghost->next_direction = ghost_get_direction(map, ghost, player);
+
+    switch (ghost->next_direction)
+    {
+      case GHOST_UP:
+        next_y--;
+        break;
+      case GHOST_DOWN:
+        next_y++;
+        break;
+      case GHOST_LEFT:
+        next_x--;
+        break;
+      case GHOST_RIGHT:
+        next_x++;
+        break;
+      default:
+        break;
+    }
+
+    Tiles next_tile = map_get_tile(map, next_x, next_y);
+
+    if (tile_is_accessible(next_tile)) {
+      ghost->direction = ghost->next_direction;
+      ghost->moving = true;
+      //printf("Ghost is moving to (%d, %d)\n", next_x, next_y);
+      ghost->next_x = next_x * MAP_TILE_SIZE;
+      ghost->next_y = next_y * MAP_TILE_SIZE;
+    } else {
+      ghost->next_x = ghost->x;
+      ghost->next_y = ghost->y;
+      ghost->moving = false;
+    }
+  } else if (sum == 1) {
+    switch (ghost->next_direction)
+    {
+      case GHOST_UP:
+        next_y--;
+        break;
+      case GHOST_DOWN:
+        next_y++;
+        break;
+      case GHOST_LEFT:
+        next_x--;
+        break;
+      case GHOST_RIGHT:
+        next_x++;
+        break;
+      default:
+        break;
+    }
+
+    if (table[0] == 0 && table[2] == 1 && ghost->direction == GHOST_UP) {
+      ghost->next_direction = GHOST_LEFT;
+      next_x--;
+    } 
+    if (table[0] == 0 && table[3] == 1 && ghost->direction == GHOST_UP) {
+      ghost->next_direction = GHOST_RIGHT;
+      next_x++;
+    } 
+    if (table[1] == 0 && table[2] == 1 && ghost->direction == GHOST_DOWN) {
+      ghost->next_direction = GHOST_LEFT;
+      next_x--;
+    } 
+    if (table[1] == 0 && table[3] == 1 && ghost->direction == GHOST_DOWN) {
+      ghost->next_direction = GHOST_RIGHT;
+      next_x++;
+    } 
+    if (table[2] == 0 && table[0] == 1 && ghost->direction == GHOST_LEFT) {
+      ghost->next_direction = GHOST_UP;
+      next_y--;
+    } 
+    if (table[2] == 0 && table[1] == 1 && ghost->direction == GHOST_LEFT) {
+      ghost->next_direction = GHOST_DOWN;
+      next_y++;
+    } 
+    if (table[3] == 0 && table[0] == 1 && ghost->direction == GHOST_RIGHT) {
+      ghost->next_direction = GHOST_UP;
+      next_y--;
+    }
+    if (table[3] == 0 && table[1] == 1 && ghost->direction == GHOST_RIGHT) {
+      ghost->next_direction = GHOST_DOWN;
+      next_y++;
+    }
+
+    Tiles next_tile = map_get_tile(map, next_x, next_y);
+
+    if (tile_is_accessible(next_tile)) {
+      ghost->direction = ghost->next_direction;
+      ghost->moving = true;
+      //printf("Ghost is moving to (%d, %d)\n", next_x, next_y);
+      ghost->next_x = next_x * MAP_TILE_SIZE;
+      ghost->next_y = next_y * MAP_TILE_SIZE;
+    } else {
+      ghost->next_x = ghost->x;
+      ghost->next_y = ghost->y;
+      ghost->moving = false;
+    }
+  }
+
+  if (ghost->x == ghost->next_x && ghost->y == ghost->next_y) {
+    ghost->moving = false;
+  } else {
+    switch (ghost->direction)
+    {
+      case GHOST_UP:
+        ghost->y -= ghost->speed;
+        break;
+      case GHOST_DOWN:
+        ghost->y += ghost->speed;
+        break;
+      case GHOST_LEFT:
+        ghost->x -= ghost->speed;
+        break;
+      case GHOST_RIGHT:
+        ghost->x += ghost->speed;
+        break;
+      default:
+        break;
+    }
+  }
 }
 
 void ghost_reset(Ghost *ghost)
@@ -76,6 +226,16 @@ void ghost_reset(Ghost *ghost)
   ghost->animation_frame = 0;
   ghost->is_active = false;
   ghost->moving = false;
+}
+
+void ghost_set_speed(Ghost *ghost, int speed)
+{
+  ghost->speed = speed;
+}
+
+void ghost_set_direction(Ghost *ghost, GhostDirection direction)
+{
+  ghost->direction = direction;
 }
 
 void ghost_activate(Ghost *ghost)
@@ -92,6 +252,9 @@ void ghost_move_to_spawn(Ghost *ghost)
 {
   ghost->x = GHOST_SPAWN_X * MAP_TILE_SIZE;
   ghost->y = GHOST_SPAWN_Y * MAP_TILE_SIZE;
+  ghost->direction = GHOST_UP;
+  ghost->next_x = ghost->x;
+  ghost->next_y = ghost->y;
 }
 
 bool ghost_check_collision(Ghost *ghost, Player *player)
@@ -101,7 +264,7 @@ bool ghost_check_collision(Ghost *ghost, Player *player)
 
   float distance = sqrt(dx * dx + dy * dy);
 
-  return distance < 20;
+  return distance < MAP_TILE_SIZE/2;
 }
 
 void ghost_animation(Ghost *ghost, Window *window)
@@ -111,90 +274,56 @@ void ghost_animation(Ghost *ghost, Window *window)
 
 void ghost_move(Ghost *ghost, Player *player, Map *map)
 {
-  switch (ghost->direction) {
-    case GHOST_UP:
-      ghost->y -= ghost->speed;
-      break;
-    case GHOST_DOWN:
-      ghost->y += ghost->speed;
-      break;
-    case GHOST_LEFT:
-      ghost->x -= ghost->speed;
-      break;
-    case GHOST_RIGHT:
-      ghost->x += ghost->speed;
-      break;
-    default:
-      break;
-  }
-
-  int x = ghost->x / MAP_TILE_SIZE;
-  int y = ghost->y / MAP_TILE_SIZE;
-
-  if (map_get_tile(map, x, y) != TILE_SPACE && map_get_tile(map, x, y) != TILE_DOT && map_get_tile(map, x, y) != TILE_POWER_UP) {
-    if (ghost->direction == GHOST_UP) {
-      ghost->y += (y + 1) * MAP_TILE_SIZE;
-    } 
-    if (ghost->direction == GHOST_DOWN) {
-      ghost->y -= (y - 1) * MAP_TILE_SIZE;
+  if (ghost->direction != GHOST_NULL) {
+    ghost->speed_timer++;
+    if (ghost->speed_timer > GHOST_SPEED) {
+      ghost->speed_timer = 0;
+      if (ghost->x < ghost->next_x) ghost->x++;
+      if (ghost->x > ghost->next_x) ghost->x--;
+      if (ghost->y < ghost->next_y) ghost->y++;
+      if (ghost->y > ghost->next_y) ghost->y--;
     }
-    if (ghost->direction == GHOST_LEFT) {
-      ghost->x += (x + 1) * MAP_TILE_SIZE;
-    } 
-    if (ghost->direction == GHOST_RIGHT) {
-      ghost->x -= (x - 1) * MAP_TILE_SIZE;
-    }
-    ghost->moving = false;
   }
 }
 
 GhostDirection ghost_get_direction(Map *map, Ghost *ghost, Player *player) 
 {
-  GhostDirection direction = ghost->direction;
+  GhostDirection directions[4];
+  int num_directions = 0;
 
-  int x = ghost->x / MAP_TILE_SIZE;
-  int y = ghost->y / MAP_TILE_SIZE;
+  ghost->direction = GHOST_UP;
 
-  Tiles up = map_get_tile(map, x, y - 1);
-  Tiles down = map_get_tile(map, x, y + 1);
-  Tiles left = map_get_tile(map, x - 1, y);
-  Tiles right = map_get_tile(map, x + 1, y);
-
-  // up, down, left, right
-  int dir_table[4] = {0, 0, 0, 0};
-
-  if (tile_is_accessible(up)) dir_table[0] = 1;
-  if (tile_is_accessible(down)) dir_table[1] = 1;
-  if (tile_is_accessible(left)) dir_table[2] = 1;
-  if (tile_is_accessible(right)) dir_table[3] = 1;
-
-  /*printf("table: ");
-  for (int i = 0; i < 4; i++) {
-    printf("%d ", dir_table[i]);
-  }
-  printf("\n");*/
-
-  if (rand() % 100 < 5) {
-    int rand_dir = rand() % 4;
-
-    while (dir_table[rand_dir] == 0) {
-      rand_dir = rand() % 4;
-    }
-
-    if (rand_dir == direction) {
-      return direction;
-    }
-
-    if (rand_dir == 0) {
-      direction = GHOST_UP;
-    } else if (rand_dir == 1) {
-      direction = GHOST_DOWN;
-    } else if (rand_dir == 2) {
-      direction = GHOST_LEFT;
-    } else if (rand_dir == 3) {
-      direction = GHOST_RIGHT;  
-    }
+  switch (ghost->direction)
+  {
+    case GHOST_UP:
+      directions[num_directions++] = GHOST_LEFT;
+      directions[num_directions++] = GHOST_RIGHT;
+      directions[num_directions++] = GHOST_DOWN;
+      directions[num_directions++] = GHOST_DOWN;
+      break;
+    case GHOST_DOWN:
+      directions[num_directions++] = GHOST_LEFT;
+      directions[num_directions++] = GHOST_UP;
+      directions[num_directions++] = GHOST_UP;
+      directions[num_directions++] = GHOST_RIGHT;
+      break;
+    case GHOST_LEFT:
+      directions[num_directions++] = GHOST_DOWN;
+      directions[num_directions++] = GHOST_UP;
+      directions[num_directions++] = GHOST_UP;
+      directions[num_directions++] = GHOST_RIGHT;
+      break;
+    case GHOST_RIGHT:
+      directions[num_directions++] = GHOST_UP;
+      directions[num_directions++] = GHOST_UP;
+      directions[num_directions++] = GHOST_DOWN;
+      directions[num_directions++] = GHOST_LEFT;
+      break;
+    default:
+      break;
   }
 
-  return direction;
+  int rand_direction = rand() % num_directions;
+
+  return directions[rand_direction];
 }

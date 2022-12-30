@@ -11,8 +11,8 @@
 #define GHOST_SPEED 4
 #define GHOST_SIZE 32
 
-#define GHOST_SPAWN_X 18
-#define GHOST_SPAWN_Y 11
+#define GHOST_SPAWN_X 17
+#define GHOST_SPAWN_Y 13
 
 #define GHOST_ANIMATION_SPEED 10
 #define GHOST_FRAMES 6
@@ -27,9 +27,10 @@ typedef enum {
 
 typedef struct {
   int x, y;
-  int speed;
+  int next_x, next_y;
+  int speed, speed_timer;
   int animation_frame, animation_timer;
-  GhostDirection direction;
+  GhostDirection direction, next_direction;
   SDL_Texture *sprite;
   bool moving;
   bool is_active;
@@ -38,12 +39,10 @@ typedef struct {
 /**
  * @brief Create a new ghost
  * @param window The window to create the ghost in
- * @param x The x position of the ghost
- * @param y The y position of the ghost
  * @param ghost_number The number of the ghost
  * @return A pointer to the ghost
  */
-Ghost *ghost_create(Window *window, int x, int y, int ghost_number);
+Ghost *ghost_create(Window *window, int ghost_number);
 
 /**
  * @brief Destroy a ghost
@@ -121,5 +120,19 @@ void ghost_deactivate(Ghost *ghost);
  * @param ghost The ghost to move
  */
 void ghost_move_to_spawn(Ghost *ghost);
+
+/**
+ * @brief Set the speed of the ghost
+ * @param ghost The ghost to set the speed of
+ * @param speed The speed to set the ghost to
+ */
+void ghost_set_speed(Ghost *ghost, int speed);
+
+/**
+ * @brief Set the direction of the ghost
+ * @param ghost The ghost to set the direction of
+ * @param direction The direction to set the ghost to
+ */
+void ghost_set_direction(Ghost *ghost, GhostDirection direction);
 
 # endif
