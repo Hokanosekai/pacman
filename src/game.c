@@ -162,19 +162,23 @@ void game_check_collision(Game *game)
   for (int i = 0; i < GHOST_AMOUNT; i++) {
     Ghost *ghost = game->ghosts[i];
     if (ghost->x < 0) {
-      ghost->x = window->width - GHOST_SIZE;
+      ghost->next_x = window->width - GHOST_SIZE;
+      ghost->x = ghost->next_x;
       return;
     }
     if (ghost->x > window->width - GHOST_SIZE) {
-      ghost->x = 0;
+      ghost->next_x = 0;
+      ghost->x = ghost->next_x;
       return;
     }
     if (ghost->y < 0) {
-      ghost->y = window->height - GHOST_SIZE;
+      ghost->next_y = window->height - GHOST_SIZE;
+      ghost->y = ghost->next_y;
       return;
     }
     if (ghost->y > window->height - GHOST_SIZE) {
-      ghost->y = 0;
+      ghost->next_y = 0;
+      ghost->y = ghost->next_y;
       return;
     }
   }
