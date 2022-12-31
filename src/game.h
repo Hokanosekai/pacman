@@ -116,4 +116,23 @@ void display_level(Game *game);
  */
 void game_state_game_over_draw(Game *game);
 
+/**
+ * @brief Insert a score in the best scores
+ * @param game Game
+ * @param score Score
+ */
+void game_insert_score(Game *game, int score);
+
+/**
+ * @brief Save the best scores
+ * @param game Game
+ */
+void game_save_best_scores(Game *game);
+
+/**
+ * @brief Load the best scores
+ * @param game Game
+ */
+void game_load_best_scores(Game *game);
+
 # endif

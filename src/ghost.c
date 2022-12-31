@@ -65,11 +65,11 @@ void ghost_update(Map *map, Ghost *ghost, Player *player)
     }
   }
 
-
   // Update ghost position
   int next_x = ghost->next_x / MAP_TILE_SIZE;
   int next_y = ghost->next_y / MAP_TILE_SIZE;
 
+  // Get next tiles
   Tiles next_up = map_get_tile(map, next_x, next_y - 1);
   Tiles next_down = map_get_tile(map, next_x, next_y + 1);
   Tiles next_left = map_get_tile(map, next_x - 1, next_y);
@@ -77,19 +77,17 @@ void ghost_update(Map *map, Ghost *ghost, Player *player)
 
   int table[4] = {0, 0, 0, 0};
 
+  // Check accessible tiles
   if (tile_is_accessible(next_up)) table[0] = 1;
   if (tile_is_accessible(next_down)) table[1] = 1;
   if (tile_is_accessible(next_left)) table[2] = 1;
   if (tile_is_accessible(next_right)) table[3] = 1;
 
+  // Remove current direction from table
   table[ghost->direction] = 0;
 
+  // Number of accessible tiles
   int sum = table[0] + table[1] + table[2] + table[3];
-
-  for (int i = 0; i < 4; i++) {
-    printf("%d ", table[i]);
-  }
-  printf("\n");
 
   // Update ghost direction
   if (!ghost->moving && sum > 1) {
@@ -118,7 +116,6 @@ void ghost_update(Map *map, Ghost *ghost, Player *player)
     if (tile_is_accessible(next_tile)) {
       ghost->direction = ghost->next_direction;
       ghost->moving = true;
-      //printf("Ghost is moving to (%d, %d)\n", next_x, next_y);
       ghost->next_x = next_x * MAP_TILE_SIZE;
       ghost->next_y = next_y * MAP_TILE_SIZE;
     } else {
@@ -183,7 +180,6 @@ void ghost_update(Map *map, Ghost *ghost, Player *player)
     if (tile_is_accessible(next_tile)) {
       ghost->direction = ghost->next_direction;
       ghost->moving = true;
-      //printf("Ghost is moving to (%d, %d)\n", next_x, next_y);
       ghost->next_x = next_x * MAP_TILE_SIZE;
       ghost->next_y = next_y * MAP_TILE_SIZE;
     } else {
@@ -193,7 +189,7 @@ void ghost_update(Map *map, Ghost *ghost, Player *player)
     }
   }
 
-  // Update ghost position
+  // Move ghost
   ghost_move(ghost);  
 }
 

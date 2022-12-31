@@ -63,8 +63,16 @@ Game *game_create(int width, int height, int scale)
     game->ghosts[i] = ghost_create(game->window, i+1);
   }
 
-  game->number_of_dot = map_count_dots(game->map);
-  game->number_of_power_pellet = map_count_power_pellets(game->map);
+  //game->number_of_dot = map_count_dots(game->map);
+  //game->number_of_power_pellet = map_count_power_pellets(game->map);
+
+  game_load_best_scores(game);
+
+  for (int i = 0; i < 5; i++)
+  {
+    printf("best score %d: %d\n", i, game->best_scores[i]);
+  }
+  
   
   return game;
 }
@@ -217,6 +225,13 @@ void game_check_collision(Game *game)
         player->lives--;
         if (player->lives == 0) {
           game->state = STATE_GAME_OVER;
+          game_insert_score(game, game->score);
+          for (int i = 0; i < 5; i++)
+          {
+            printf("best score %d: %d\n", i, game->best_scores[i]);
+          }
+          
+          game_save_best_scores(game);
         } else {
           player_reset(player);
           for (int i = 0; i < GHOST_AMOUNT; i++) {
@@ -262,6 +277,8 @@ void game_next_level(Game *game)
     ghost_reset(game->ghosts[i]);
     ghost_set_speed(game->ghosts[i], game->ghosts[i]->speed++);
   }
+
+  game->state = STATE_GAME;
 }
 
 void display_start_button(Game *game)
@@ -277,15 +294,12 @@ void display_start_button(Game *game)
 
 void display_best_scores(Game *game)
 {
-  FILE *fp = fopen("scores.txt", "rw");
-  if (fp == NULL) {
-    fp = fopen("scores.txt", "w");
-  }
-
   char str[255];
   for (int i = 0; i < 5; i++) {
-    if (fgets(str, 255, fp) == NULL) {
-      sprintf(str, "%d: -----", i + 1);
+    if (game->best_scores[i] == 0) {
+      sprintf(str, "%d. ---", i + 1);
+    } else {
+      sprintf(str, "%d. %d", i + 1, game->best_scores[i]);
     }
     window_draw_text(game->window, 5, 5 + i * 20, str, 255, 255, 255);
   }
@@ -382,4 +396,65 @@ void game_state_game_over_draw(Game *game)
   SDL_Rect rect = { 0, 0, 30, 30 };
 
   window_draw_rect(game->window, &rect, 0, 255, 0, 255);
+}
+
+void game_insert_score(Game *game, int score)
+{
+  int index = 0;
+  for (int i = 0; i < 5; i++) {
+    if (game->best_scores[i] > score) {
+      index++;
+    } else {
+      break;
+    }
+  }
+
+  printf("index: %d\n", index);
+
+  for (int i = 4; i >= index; i--) {
+    game->best_scores[i+1] = game->best_scores[i];
+  }
+
+  game->best_scores[index] = score;
+}
+
+void game_save_best_scores(Game *game)
+{
+  FILE *fp = fopen("scores.txt", "w");
+  if (fp == NULL) {
+    return;
+  }
+
+  for (int i = 0; i < 5; i++) {
+    fprintf(fp, "%d\n", game->best_scores[i]);
+  }
+
+  fclose(fp);
+}
+
+void game_load_best_scores(Game *game)
+{
+  FILE *fp = fopen("scores.txt", "r");
+  if (fp == NULL) {
+    fp = fopen("scores.txt", "w");
+  }
+
+  char str[255];
+  int i = 0;
+
+  while (fgets(str, 255, fp) != NULL) {
+    game->best_scores[i] = malloc(sizeof(int));
+    printf("%s", str);
+    game->best_scores[i] = atoi(str);
+    i++;
+  }
+
+  if (i < 5) {
+    for (int j = i; j < 5; j++) {
+      game->best_scores[j] = malloc(sizeof(int));
+      game->best_scores[j] = 0;
+    }
+  }
+
+  fclose(fp);
 }
