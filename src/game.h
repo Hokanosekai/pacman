@@ -8,12 +8,14 @@
 #include "ghost.h"
 
 #define GHOST_AMOUNT 4
+#define START_BUTTON_ANIMATION_SPEED 2
+
+#define NUMBER_OF_DOT 205
+#define NUMBER_OF_POWER_PELLET 4
 
 typedef struct {
-    int width;
-    int height;
+    int width, height;
     int scale;
-    int running;
     int score;
     Window *window;
     GameState state;
@@ -21,6 +23,10 @@ typedef struct {
     Map *map;
     Ghost *ghosts[GHOST_AMOUNT];
     SDL_Texture *heart_texture;
+    int start_button_animation_frame;
+    int best_scores[5];
+    int number_of_dot, number_of_power_pellet;
+    int level;
 } Game;
 
 /**
@@ -51,10 +57,34 @@ void game_run(Game *game);
 void game_check_collision(Game *game);
 
 /**
+ * @brief Go to the next level
+ * @param game Game
+ */
+void game_next_level(Game *game);
+
+/**
+ * @brief Reset the game
+ * @param game Game
+ */
+void game_reset(Game *game);
+
+/**
  * @brief Display the menu screen
  * @param game Game
  */
 void game_state_menu_draw(Game *game);
+
+/**
+ * @brief Display the start button
+ * @param game Game
+ */
+void display_start_button(Game *game);
+
+/**
+ * @brief Display the best scores
+ * @param game Game
+ */
+void display_best_scores(Game *game);
 
 /**
  * @brief Display the game screen
@@ -73,6 +103,12 @@ void display_score(Game *game);
  * @param game Game
  */
 void display_lives(Game *game);
+
+/**
+ * @brief Display the level
+ * @param game Game
+ */
+void display_level(Game *game);
 
 /**
  * @brief Display the game over screen

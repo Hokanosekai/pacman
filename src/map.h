@@ -59,4 +59,18 @@ Tiles map_get_tile(Map *map, int x, int y);
  */
 bool map_check_collision(Map *map, int x, int y);
 
+/**
+ * @brief Count the number of dot in the map
+ * @param map Map
+ * @return int
+ */
+int map_count_dots(Map *map);
+
+/**
+ * @brief Count the number of power dot in the map
+ * @param map Map
+ * @return int
+ */
+int map_count_power_pellets(Map *map);
+
 # endif

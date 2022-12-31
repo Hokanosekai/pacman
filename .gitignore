@@ -54,3 +54,4 @@ dkms.conf
 # Personal
 debug/pacman
 .vscode/**
+scores.txt

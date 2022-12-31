@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <stdio.h>
 
 #include "game.h"
 #include "game_state.h"
@@ -47,8 +48,11 @@ Game *game_create(int width, int height, int scale)
 
   // init game score
   game->score = 0;
+  game->level = 1;
+
   // init game state
   game->state = STATE_MENU;
+  game->start_button_animation_frame = 0;
 
   // init player
   game->player = player_create(game->window);
@@ -58,6 +62,9 @@ Game *game_create(int width, int height, int scale)
   {
     game->ghosts[i] = ghost_create(game->window, i+1);
   }
+
+  game->number_of_dot = map_count_dots(game->map);
+  game->number_of_power_pellet = map_count_power_pellets(game->map);
   
   return game;
 }
@@ -100,8 +107,6 @@ void game_run(Game *game)
     window_clear(game->window);
     // render map
     map_render(game->map, game->window);
-    // check collision
-    game_check_collision(game);
     
     switch ((int)game->state)
     {
@@ -177,30 +182,6 @@ void game_check_collision(Game *game)
   int x = (player->x + PLAYER_SIZE/2) / MAP_TILE_SIZE;
   int y = (player->y + PLAYER_SIZE/2) / MAP_TILE_SIZE;
 
-  /*for (int x = 0; x < map->cols; x++) {
-    for (int y = 0; y < map->rows; y++) {
-      if (map->map[x][y] != TILE_SPACE && map->map[x][y] != TILE_DOT && map->map[x][y] != TILE_POWER_UP) {
-        float dx = player->x - x * MAP_TILE_SIZE;
-        float dy = player->y - y * MAP_TILE_SIZE;
-
-        if (sqrt(dx*dx + dy*dy) < PLAYER_SIZE) {
-          if (player->direction == PLAYER_UP && dy > 0) {
-            player->y = (y + 1) * MAP_TILE_SIZE;
-          }
-          if (player->direction == PLAYER_DOWN && dy < 0) {
-            player->y = (y - 1) * MAP_TILE_SIZE;
-          }
-          if (player->direction == PLAYER_LEFT && dx > 0) {
-            player->x = (x + 1) * MAP_TILE_SIZE;
-          }
-          if (player->direction == PLAYER_RIGHT && dx < 0) {
-            player->x = (x - 1) * MAP_TILE_SIZE;
-          }
-        }
-      }
-    }
-  }*/
-
   // check player collision with wall tile
   Tiles tile = map_get_tile(map, x, y);
 
@@ -230,7 +211,6 @@ void game_check_collision(Game *game)
         game->score += 100 * player->number_of_ghosts_eaten;
       } else {
         player->lives--;
-        printf("lives: %d\n", player->lives);
         if (player->lives == 0) {
           game->state = STATE_GAME_OVER;
         } else {
@@ -244,34 +224,86 @@ void game_check_collision(Game *game)
   }
 }
 
+void game_reset(Game *game)
+{
+  if (game == NULL) {
+    return;
+  }
+
+  game->score = 0;
+  game->state = STATE_MENU;
+  player_reset(game->player);
+  for (int i = 0; i < GHOST_AMOUNT; i++) {
+    ghost_reset(game->ghosts[i]);
+  }
+}
+
+void game_next_level(Game *game)
+{
+  if (game == NULL) {
+    return;
+  }
+
+  map_destroy(game->map);
+  game->map = map_init(
+    game->window, 
+    "../assets/maps/map1.txt", 
+    "../assets/textures/tiles5.png"
+  );
+
+  game->level++;
+  game->score += 1000;
+  player_reset(game->player);
+  for (int i = 0; i < GHOST_AMOUNT; i++) {
+    ghost_reset(game->ghosts[i]);
+    ghost_set_speed(game->ghosts[i], game->ghosts[i]->speed++);
+  }
+}
+
+void display_start_button(Game *game)
+{
+  char str[255];
+  sprintf(str, "Insert Coin");
+
+  int x = game->width / 2 - (strlen(str));
+  int y = game->height / 2 - 50;
+
+  window_draw_text(game->window, x, y, str, 255, 255, 255);
+}
+
+void display_best_scores(Game *game)
+{
+  FILE *fp = fopen("scores.txt", "rw");
+  if (fp == NULL) {
+    fp = fopen("scores.txt", "w");
+  }
+
+  char str[255];
+  for (int i = 0; i < 5; i++) {
+    if (fgets(str, 255, fp) == NULL) {
+      sprintf(str, "%d: -----", i + 1);
+    }
+    window_draw_text(game->window, 5, 5 + i * 20, str, 255, 255, 255);
+  }
+}
+
 void game_state_menu_draw(Game *game)
 {
   if (game == NULL) {
     return;
   }
 
-  display_score(game);
-  display_lives(game);
-
-  player_update(game->map, game->player);
-  for (int i = 0; i < GHOST_AMOUNT; i++) {
-    ghost_update(game->map, game->ghosts[i], game->player);
+  game->start_button_animation_frame++;
+  if (game->start_button_animation_frame > START_BUTTON_ANIMATION_SPEED) {
+    game->start_button_animation_frame = 0;
+    display_start_button(game);
   }
 
-  player_render(game->player, game->window);
-  //player_move(game->player);
+  display_best_scores(game);
 
-  for (int i = 0; i < GHOST_AMOUNT; i++)
-  {
-    ghost_render(game->ghosts[i], game->window);
-    //ghost_move(game->ghosts[i], game->player, game->map);
-    if (game->player->invincible) {
-      ghost_animation(game->ghosts[i], game->window);
-    } else {
-      char *path = malloc(sizeof(char) * 255);
-      sprintf(path, "../assets/sprites/ghost_%d.png", i + 1);
-      window_load_texture(game->window, path, &game->ghosts[i]->sprite);
-    }
+  const Uint8 *state = SDL_GetKeyboardState(NULL);
+  if (state[SDL_SCANCODE_RETURN]) {
+    game->state = STATE_GAME;
   }
 }
 
@@ -291,15 +323,50 @@ void display_lives(Game *game)
   }
 }
 
+void display_level(Game *game)
+{
+  char str[255];
+  sprintf(str, "Level: %d", game->level);
+
+  window_draw_text(game->window, (game->width / 2) - 5, 2, str, 255, 255, 255);
+}
+
 void game_state_game_draw(Game *game)
 {
   if (game == NULL) {
     return;
   }
 
-  SDL_Rect rect = { 0, 0, 30, 30 };
+  // check collision
+  game_check_collision(game);
 
-  window_draw_rect(game->window, &rect, 0, 0, 255, 255);
+  display_score(game);
+  display_lives(game);
+  display_level(game);
+
+  player_update(game->map, game->player);
+  for (int i = 0; i < GHOST_AMOUNT; i++) {
+    ghost_update(game->map, game->ghosts[i], game->player);
+  }
+
+  player_render(game->player, game->window);
+
+  for (int i = 0; i < GHOST_AMOUNT; i++)
+  {
+    ghost_render(game->ghosts[i], game->window);
+    if (game->player->invincible) {
+      ghost_animation(game->ghosts[i], game->window);
+    } else {
+      char *path = malloc(sizeof(char) * 255);
+      sprintf(path, "../assets/sprites/ghost_%d.png", i + 1);
+      window_load_texture(game->window, path, &game->ghosts[i]->sprite);
+    }
+  }
+
+  if (game->player->number_of_dots_eaten == NUMBER_OF_DOT
+    && game->player->number_of_power_pellets_eaten == NUMBER_OF_POWER_PELLET) {
+      game_next_level(game);
+  }
 }
 
 void game_state_game_over_draw(Game *game)

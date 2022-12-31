@@ -19,8 +19,6 @@ Player *player_create(Window *window)
   player_move_to_spawn(player);
   player->speed = PLAYER_SPEED;
   player->speed_timer = 0;
-  player->direction = PLAYER_NULL;
-  player->next_direction = PLAYER_NULL;
   player->animation_frame = 0;
   player->moving = false;
   player->dead = false;
@@ -191,10 +189,12 @@ void player_move_to_spawn(Player *player)
   player->next_x = player->x;
   player->next_y = player->y;
   player->direction = PLAYER_NULL;
+  player->next_direction = PLAYER_NULL;
 }
 
 void player_reset(Player *player)
 {
+  player->speed_timer = 0;
   player->animation_frame = 0;
   player->moving = false;
   player->dead = false;

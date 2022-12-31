@@ -246,3 +246,34 @@ bool tile_is_accessible(Tiles tile)
       return false;
   }
 }
+
+int map_count_dots(Map *map)
+{
+  int count = 0;
+
+  for (int x = 0; x < map->cols; x++) {
+    for (int y = 0; y < map->rows; y++) {
+      if (map->map[x][y] == TILE_DOT) {
+        count++;
+        printf("count: %d\n", count);
+      }
+    }
+  }
+
+  return count;
+}
+
+int map_count_power_pellets(Map *map)
+{
+  int count = 0;
+
+  for (int x = 0; x < map->cols; x++) {
+    for (int y = 0; y < map->rows; y++) {
+      if (map->map[x][y] == TILE_POWER_UP) {
+        count++;
+      }
+    }
+  }
+
+  return count;
+}

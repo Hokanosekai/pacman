@@ -201,8 +201,8 @@ void ghost_reset(Ghost *ghost)
 {
   ghost_move_to_spawn(ghost);
   ghost->speed = GHOST_SPEED;
-  ghost->direction = GHOST_NULL;
   ghost->animation_frame = 0;
+  ghost->animation_timer = 0;
   ghost->is_active = false;
   ghost->moving = false;
 }
@@ -232,6 +232,7 @@ void ghost_move_to_spawn(Ghost *ghost)
   ghost->x = GHOST_SPAWN_X * MAP_TILE_SIZE;
   ghost->y = GHOST_SPAWN_Y * MAP_TILE_SIZE;
   ghost->direction = GHOST_UP;
+  ghost->next_direction = GHOST_UP;
   ghost->next_x = ghost->x;
   ghost->next_y = ghost->y;
 }
