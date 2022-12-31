@@ -13,6 +13,19 @@
 #define NUMBER_OF_DOT 205
 #define NUMBER_OF_POWER_PELLET 4
 
+#define SCORE_FILE "../data/scores.txt"
+#define LEVEL_FILE "../data/level.txt"
+
+#define FONT_FILE "../assets/fonts/OpenSans.ttf"
+#define FONT_SIZE 20
+
+#define HEART_FILE "../assets/sprites/heart.png"
+#define MAP_TEXTURE_FILE "../assets/textures/tiles5.png"
+
+#define PLAYER_TEXTURE_FILE "../assets/sprites/pacman2.png"
+#define GHOST_TEXTURE_FILE "../assets/sprites/ghost_%d.png"
+#define GHOST_ANIMATE_TEXTURE_FILE "../assets/sprites/ghost_animate.png"
+
 typedef struct {
     int width, height;
     int scale;

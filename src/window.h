@@ -6,6 +6,12 @@
 #include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
 
+#define RED_COLOR (SDL_Color) { 255, 0, 0, 255 }
+#define GREEN_COLOR (SDL_Color) { 0, 255, 0, 255 }
+#define BLUE_COLOR (SDL_Color) { 0, 0, 255, 255 }
+#define WHITE_COLOR (SDL_Color) { 255, 255, 255, 255 }
+#define BLACK_COLOR (SDL_Color) { 0, 0, 0, 255 }
+
 typedef struct {
     SDL_Window *window;
     SDL_Renderer *renderer;
@@ -64,12 +70,9 @@ void window_draw(Window *window, SDL_Texture *texture, SDL_Rect *rect);
  * @brief Draw a rectangle on the window
  * @param window Window
  * @param rect SDL_Rect
- * @param r Red
- * @param g Green
- * @param b Blue
- * @param a Alpha
+ * @param color SDL_Color
  */
-void window_draw_rect(Window *window, SDL_Rect *rect, int r, int g, int b, int a);
+void window_draw_rect(Window *window, SDL_Rect *rect, SDL_Color color);
 
 /**
  * @brief Draw a line on the window
@@ -78,12 +81,9 @@ void window_draw_rect(Window *window, SDL_Rect *rect, int r, int g, int b, int a
  * @param y1 Y1
  * @param x2 X2
  * @param y2 Y2
- * @param r Red
- * @param g Green
- * @param b Blue
- * @param a Alpha
+ * @param color SDL_Color
  */
-void window_draw_line(Window *window, int x1, int y1, int x2, int y2, int r, int g, int b, int a);
+void window_draw_line(Window *window, int x1, int y1, int x2, int y2, SDL_Color color);
 
 /**
  * @brief Draw a circle on the window
@@ -91,12 +91,9 @@ void window_draw_line(Window *window, int x1, int y1, int x2, int y2, int r, int
  * @param x X
  * @param y Y
  * @param radius Radius
- * @param r Red
- * @param g Green
- * @param b Blue
- * @param a Alpha
+ * @param color SDL_Color
  */
-void window_draw_circle(Window *window, int x, int y, int radius, int r, int g, int b, int a);
+void window_draw_circle(Window *window, int x, int y, int radius, SDL_Color color);
 
 /**
  * @brief Draw a text on the window
@@ -104,11 +101,9 @@ void window_draw_circle(Window *window, int x, int y, int radius, int r, int g, 
  * @param x X
  * @param y Y
  * @param text Text
- * @param r Red
- * @param g Green
- * @param b Blue
+ * @param color SDL_Color
  */
-void window_draw_text(Window *window, int x, int y, const char *text, int r, int g, int b);
+void window_draw_text(Window *window, int x, int y, const char *text, SDL_Color color);
 
 /**
  * @brief Draw a texture on the window
@@ -144,6 +139,15 @@ void window_load_font(Window *window, const char *path, int size);
  */
 void window_rotate_texture(Window *window, SDL_Texture *texture, SDL_Rect *rect, double angle, SDL_RendererFlip flip);
 
+/**
+ * @brief Draw a sprite on the window
+ * @param window Window
+ * @param texture SDL_Texture
+ * @param src SDL_Rect
+ * @param dst SDL_Rect
+ * @param angle Angle to rotate
+ * @param flip Flip image verticaly
+ */
 void window_draw_sprite(Window *window, SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst, double angle, SDL_RendererFlip flip);
 
 # endif

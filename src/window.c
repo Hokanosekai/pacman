@@ -5,7 +5,6 @@
 
 #include "window.h"
 
-
 void cleanup(SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture)
 {
   if (texture != NULL) {
@@ -73,9 +72,9 @@ void window_draw(Window *window, SDL_Texture *texture, SDL_Rect *rect)
   }
 }
 
-void window_draw_rect(Window *window, SDL_Rect *rect, int r, int g, int b, int a)
+void window_draw_rect(Window *window, SDL_Rect *rect, SDL_Color color)
 {
-  if (SDL_SetRenderDrawColor(window->renderer, r, g, b, a) != 0) {
+  if (SDL_SetRenderDrawColor(window->renderer, color.r, color.g, color.b, color.a) != 0) {
     fprintf(stderr, "Erreur lors du rendu du rectangle : %s\n", SDL_GetError());
     cleanup(window->window, window->renderer, NULL);
     return;
@@ -87,9 +86,9 @@ void window_draw_rect(Window *window, SDL_Rect *rect, int r, int g, int b, int a
   }
 }
 
-void window_draw_line(Window *window, int x1, int y1, int x2, int y2, int r, int g, int b, int a)
+void window_draw_line(Window *window, int x1, int y1, int x2, int y2, SDL_Color color)
 {
-  if (SDL_SetRenderDrawColor(window->renderer, r, g, b, a) != 0) {
+  if (SDL_SetRenderDrawColor(window->renderer, color.r, color.g, color.b, color.a) != 0) {
     fprintf(stderr, "Erreur lors du rendu de la ligne : %s\n", SDL_GetError());
     cleanup(window->window, window->renderer, NULL);
     return;
@@ -101,9 +100,9 @@ void window_draw_line(Window *window, int x1, int y1, int x2, int y2, int r, int
   }
 }
 
-void window_draw_circle(Window *window, int x, int y, int radius, int r, int g, int b, int a)
+void window_draw_circle(Window *window, int x, int y, int radius, SDL_Color color)
 {
-  if (SDL_SetRenderDrawColor(window->renderer, r, g, b, a) != 0) {
+  if (SDL_SetRenderDrawColor(window->renderer, color.r, color.g, color.b, color.a) != 0) {
     fprintf(stderr, "Erreur lors du rendu du cercle : %s\n", SDL_GetError());
     cleanup(window->window, window->renderer, NULL);
     return;
@@ -123,9 +122,8 @@ void window_draw_circle(Window *window, int x, int y, int radius, int r, int g, 
   }
 }
 
-void window_draw_text(Window *window, int x, int y, const char *text, int r, int g, int b)
+void window_draw_text(Window *window, int x, int y, const char *text, SDL_Color color)
 {
-  SDL_Color color = {r, g, b, 255};
   SDL_Surface* surface = TTF_RenderText_Solid(window->font, text, color);
   if (surface == NULL) {
     fprintf(stderr, "Erreur lors du chargement de l'image : %s\n", SDL_GetError());

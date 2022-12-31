@@ -28,7 +28,7 @@ Ghost *ghost_create(Window *window, int ghost_number)
   ghost->moving = false;
 
   char *sprite_path = malloc(sizeof(char) * 100);
-  sprintf(sprite_path, "../assets/sprites/ghost_%d.png", ghost_number);
+  sprintf(sprite_path, GHOST_TEXTURE_FILE, ghost_number);
 
   window_load_texture(window, sprite_path, &ghost->sprite);
 
@@ -245,7 +245,7 @@ bool ghost_check_collision(Ghost *ghost, Player *player)
 
 void ghost_animation(Ghost *ghost, Window *window)
 {
-  window_load_texture(window, "../assets/sprites/ghost_inactive.png", &ghost->sprite);
+  window_load_texture(window, GHOST_ANIMATE_TEXTURE_FILE, &ghost->sprite);
 }
 
 void ghost_move(Ghost *ghost)

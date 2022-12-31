@@ -28,7 +28,7 @@ Player *player_create(Window *window)
   player->number_of_dots_eaten = 0;
   player->number_of_power_pellets_eaten = 0;
   player->number_of_ghosts_eaten = 0;
-  window_load_texture(window, "../assets/sprites/pacman2.png", &player->sprite);
+  window_load_texture(window, PLAYER_TEXTURE_FILE, &player->sprite);
 
   return player;
 }
@@ -74,20 +74,6 @@ void player_update(Map *map, Player *player)
 {
   int next_x = player->next_x / MAP_TILE_SIZE;
   int next_y = player->next_y / MAP_TILE_SIZE;
-
-  Tiles next_up = map_get_tile(map, next_x, next_y - 1);
-  Tiles next_down = map_get_tile(map, next_x, next_y + 1);
-  Tiles next_left = map_get_tile(map, next_x - 1, next_y);
-  Tiles next_right = map_get_tile(map, next_x + 1, next_y);
-
-  int table[4] = {0, 0, 0, 0};
-
-  if (tile_is_accessible(next_up)) table[0] = 1;
-  if (tile_is_accessible(next_down)) table[1] = 1;
-  if (tile_is_accessible(next_left)) table[2] = 1;
-  if (tile_is_accessible(next_right)) table[3] = 1;
-
-  int sum = table[0] + table[1] + table[2] + table[3];
 
   if (!player->moving) {
     const Uint8 *state = SDL_GetKeyboardState(NULL);

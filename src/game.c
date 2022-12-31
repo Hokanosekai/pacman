@@ -24,7 +24,7 @@ Game *game_create(int width, int height, int scale)
 
   // init game window for rendering
   game->window = window_create("Pacman", width, height);
-  window_load_font(game->window, "../assets/fonts/OpenSans.ttf", 16);
+  window_load_font(game->window, FONT_FILE, 16);
   if (game->window == NULL) {
     return NULL;
   }
@@ -32,15 +32,15 @@ Game *game_create(int width, int height, int scale)
   // loading textures
   window_load_texture(
     game->window, 
-    "../assets/sprites/heart.png", 
+    HEART_FILE, 
     &game->heart_texture
   );
 
   // init map
   game->map = map_init(
     game->window, 
-    "../assets/maps/map1.txt", 
-    "../assets/textures/tiles5.png"
+    LEVEL_FILE, 
+    MAP_TEXTURE_FILE
   );
   if (game->map == NULL) {
     return NULL;
@@ -67,12 +67,6 @@ Game *game_create(int width, int height, int scale)
   //game->number_of_power_pellet = map_count_power_pellets(game->map);
 
   game_load_best_scores(game);
-
-  for (int i = 0; i < 5; i++)
-  {
-    printf("best score %d: %d\n", i, game->best_scores[i]);
-  }
-  
   
   return game;
 }
@@ -106,7 +100,6 @@ void game_run(Game *game)
     {
       if (event.type == SDL_QUIT)
       {
-        printf("quit\n");
         break;
       }
     }
@@ -226,11 +219,6 @@ void game_check_collision(Game *game)
         if (player->lives == 0) {
           game->state = STATE_GAME_OVER;
           game_insert_score(game, game->score);
-          for (int i = 0; i < 5; i++)
-          {
-            printf("best score %d: %d\n", i, game->best_scores[i]);
-          }
-          
           game_save_best_scores(game);
         } else {
           player_reset(player);
@@ -266,8 +254,8 @@ void game_next_level(Game *game)
   map_destroy(game->map);
   game->map = map_init(
     game->window, 
-    "../assets/maps/map1.txt", 
-    "../assets/textures/tiles5.png"
+    LEVEL_FILE, 
+    MAP_TEXTURE_FILE
   );
 
   game->level++;
@@ -289,7 +277,7 @@ void display_start_button(Game *game)
   int x = game->width / 2 - (strlen(str));
   int y = game->height / 2 - 50;
 
-  window_draw_text(game->window, x, y, str, 255, 255, 255);
+  window_draw_text(game->window, x, y, str, WHITE_COLOR);
 }
 
 void display_best_scores(Game *game)
@@ -301,7 +289,7 @@ void display_best_scores(Game *game)
     } else {
       sprintf(str, "%d. %d", i + 1, game->best_scores[i]);
     }
-    window_draw_text(game->window, 5, 5 + i * 20, str, 255, 255, 255);
+    window_draw_text(game->window, 5, 5 + i * 20, str, WHITE_COLOR);
   }
 }
 
@@ -330,7 +318,7 @@ void display_score(Game *game)
   char str[255];
   sprintf(str, "Score: %d", game->score);
 
-  window_draw_text(game->window, 5, 2, str, 255, 255, 255);
+  window_draw_text(game->window, 5, 2, str, WHITE_COLOR);
 }
 
 void display_lives(Game *game)
@@ -346,7 +334,7 @@ void display_level(Game *game)
   char str[255];
   sprintf(str, "Level: %d", game->level);
 
-  window_draw_text(game->window, (game->width / 2) - 5, 2, str, 255, 255, 255);
+  window_draw_text(game->window, (game->width / 2) - 5, 2, str, WHITE_COLOR);
 }
 
 void game_state_game_draw(Game *game)
@@ -376,7 +364,7 @@ void game_state_game_draw(Game *game)
       ghost_animation(game->ghosts[i], game->window);
     } else {
       char *path = malloc(sizeof(char) * 255);
-      sprintf(path, "../assets/sprites/ghost_%d.png", i + 1);
+      sprintf(path, GHOST_TEXTURE_FILE, i + 1);
       window_load_texture(game->window, path, &game->ghosts[i]->sprite);
     }
   }
@@ -395,7 +383,7 @@ void game_state_game_over_draw(Game *game)
 
   SDL_Rect rect = { 0, 0, 30, 30 };
 
-  window_draw_rect(game->window, &rect, 0, 255, 0, 255);
+  window_draw_rect(game->window, &rect, GREEN_COLOR);
 }
 
 void game_insert_score(Game *game, int score)
@@ -409,8 +397,6 @@ void game_insert_score(Game *game, int score)
     }
   }
 
-  printf("index: %d\n", index);
-
   for (int i = 4; i >= index; i--) {
     game->best_scores[i+1] = game->best_scores[i];
   }
@@ -420,7 +406,7 @@ void game_insert_score(Game *game, int score)
 
 void game_save_best_scores(Game *game)
 {
-  FILE *fp = fopen("scores.txt", "w");
+  FILE *fp = fopen(SCORE_FILE, "w");
   if (fp == NULL) {
     return;
   }
@@ -434,24 +420,21 @@ void game_save_best_scores(Game *game)
 
 void game_load_best_scores(Game *game)
 {
-  FILE *fp = fopen("scores.txt", "r");
+  FILE *fp = fopen(SCORE_FILE, "r");
   if (fp == NULL) {
-    fp = fopen("scores.txt", "w");
+    fp = fopen(SCORE_FILE, "w");
   }
 
   char str[255];
   int i = 0;
 
   while (fgets(str, 255, fp) != NULL) {
-    game->best_scores[i] = malloc(sizeof(int));
-    printf("%s", str);
     game->best_scores[i] = atoi(str);
     i++;
   }
 
   if (i < 5) {
     for (int j = i; j < 5; j++) {
-      game->best_scores[j] = malloc(sizeof(int));
       game->best_scores[j] = 0;
     }
   }
