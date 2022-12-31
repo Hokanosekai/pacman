@@ -68,10 +68,8 @@ void ghost_render(Ghost *ghost, Window *window);
 /**
  * @brief Move the ghost
  * @param ghost The ghost to move
- * @param player The player to move the ghost towards
- * @param map The map to move the ghost in
  */
-void ghost_move(Ghost *ghost, Player *player, Map *map);
+void ghost_move(Ghost *ghost);
 
 /**
  * @brief Reset the ghost

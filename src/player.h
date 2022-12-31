@@ -8,7 +8,7 @@
 #include "window.h"
 #include "map.h"
 
-#define PLAYER_SPEED 1
+#define PLAYER_SPEED 4
 #define PLAYER_SIZE 32
 
 #define PLAYER_SPAWN_X 17

@@ -74,41 +74,52 @@ void player_set_direction(Player *player, PlayerDirection direction)
 
 void player_update(Map *map, Player *player)
 {
-  const Uint8 *state = SDL_GetKeyboardState(NULL);
-
-  if (state[SDL_SCANCODE_UP]) player->next_direction = PLAYER_UP;
-  if (state[SDL_SCANCODE_DOWN]) player->next_direction = PLAYER_DOWN;
-  if (state[SDL_SCANCODE_LEFT]) player->next_direction = PLAYER_LEFT;
-  if (state[SDL_SCANCODE_RIGHT]) player->next_direction = PLAYER_RIGHT;
-  if (state[SDL_SCANCODE_SPACE]) player->next_direction = PLAYER_NULL;
-
   int next_x = player->next_x / MAP_TILE_SIZE;
   int next_y = player->next_y / MAP_TILE_SIZE;
 
-  switch (player->next_direction)
-  {
-    case PLAYER_UP:
-      next_y--;
-      break;
-    case PLAYER_DOWN:
-      next_y++;
-      break;
-    case PLAYER_LEFT:
-      next_x--;
-      break;
-    case PLAYER_RIGHT:
-      next_x++;
-      break;
-    default:
-      break;
+  Tiles next_up = map_get_tile(map, next_x, next_y - 1);
+  Tiles next_down = map_get_tile(map, next_x, next_y + 1);
+  Tiles next_left = map_get_tile(map, next_x - 1, next_y);
+  Tiles next_right = map_get_tile(map, next_x + 1, next_y);
+
+  int table[4] = {0, 0, 0, 0};
+
+  if (tile_is_accessible(next_up)) table[0] = 1;
+  if (tile_is_accessible(next_down)) table[1] = 1;
+  if (tile_is_accessible(next_left)) table[2] = 1;
+  if (tile_is_accessible(next_right)) table[3] = 1;
+
+  int sum = table[0] + table[1] + table[2] + table[3];
+
+  if (!player->moving) {
+    const Uint8 *state = SDL_GetKeyboardState(NULL);
+
+    if (state[SDL_SCANCODE_UP]) player->next_direction = PLAYER_UP;
+    if (state[SDL_SCANCODE_DOWN]) player->next_direction = PLAYER_DOWN;
+    if (state[SDL_SCANCODE_LEFT]) player->next_direction = PLAYER_LEFT;
+    if (state[SDL_SCANCODE_RIGHT]) player->next_direction = PLAYER_RIGHT;
+    if (state[SDL_SCANCODE_SPACE]) player->next_direction = PLAYER_NULL;
+
+    switch (player->next_direction)
+    {
+      case PLAYER_UP:
+        next_y--;
+        break;
+      case PLAYER_DOWN:
+        next_y++;
+        break;
+      case PLAYER_LEFT:
+        next_x--;
+        break;
+      case PLAYER_RIGHT:
+        next_x++;
+        break;
+      default:
+        break;
+    }
   }
 
   Tiles next_tile = map_get_tile(map, next_x, next_y);
-  
-  /*int up_distance = abs(player->y - (y * MAP_TILE_SIZE));
-  int down_distance = abs(player->y - (y * MAP_TILE_SIZE));
-  int left_distance = abs(player->x - (x * MAP_TILE_SIZE));
-  int right_distance = abs(player->x - (x * MAP_TILE_SIZE));*/
 
   if (tile_is_accessible(next_tile)) {
     player->direction = player->next_direction;
@@ -120,6 +131,9 @@ void player_update(Map *map, Player *player)
     player->next_y = player->y;
     player->moving = false;
   }
+
+  // move player
+  player_move(player);
 
   // update player animation
   player->animation_timer += 1;
@@ -146,14 +160,25 @@ void player_update(Map *map, Player *player)
 
 void player_move(Player *player)
 {
-  if (player->direction != PLAYER_NULL) {
-    player->speed_timer++;
-    if (player->speed_timer > PLAYER_SPEED) {
-      player->speed_timer = 0;
-      if (player->x < player->next_x) player->x++;
-      if (player->x > player->next_x) player->x--;
-      if (player->y < player->next_y) player->y++;
-      if (player->y > player->next_y) player->y--;
+  if (player->x == player->next_x && player->y == player->next_y) {
+    player->moving = false;
+  } else {
+    switch (player->direction)
+    {
+      case PLAYER_UP:
+        player->y -= player->speed;
+        break;
+      case PLAYER_DOWN:
+        player->y += player->speed;
+        break;
+      case PLAYER_LEFT:
+        player->x -= player->speed;
+        break;
+      case PLAYER_RIGHT:
+        player->x += player->speed;
+        break;
+      default:
+        break;
     }
   }
 }

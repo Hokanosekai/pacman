@@ -91,8 +91,6 @@ void ghost_update(Map *map, Ghost *ghost, Player *player)
   }
   printf("\n");
 
-
-
   // Update ghost direction
   if (!ghost->moving && sum > 1) {
     ghost->next_direction = ghost_get_direction(map, ghost, player);
@@ -195,27 +193,8 @@ void ghost_update(Map *map, Ghost *ghost, Player *player)
     }
   }
 
-  if (ghost->x == ghost->next_x && ghost->y == ghost->next_y) {
-    ghost->moving = false;
-  } else {
-    switch (ghost->direction)
-    {
-      case GHOST_UP:
-        ghost->y -= ghost->speed;
-        break;
-      case GHOST_DOWN:
-        ghost->y += ghost->speed;
-        break;
-      case GHOST_LEFT:
-        ghost->x -= ghost->speed;
-        break;
-      case GHOST_RIGHT:
-        ghost->x += ghost->speed;
-        break;
-      default:
-        break;
-    }
-  }
+  // Update ghost position
+  ghost_move(ghost);  
 }
 
 void ghost_reset(Ghost *ghost)
@@ -272,26 +251,35 @@ void ghost_animation(Ghost *ghost, Window *window)
   window_load_texture(window, "../assets/sprites/ghost_inactive.png", &ghost->sprite);
 }
 
-void ghost_move(Ghost *ghost, Player *player, Map *map)
+void ghost_move(Ghost *ghost)
 {
-  if (ghost->direction != GHOST_NULL) {
-    ghost->speed_timer++;
-    if (ghost->speed_timer > GHOST_SPEED) {
-      ghost->speed_timer = 0;
-      if (ghost->x < ghost->next_x) ghost->x++;
-      if (ghost->x > ghost->next_x) ghost->x--;
-      if (ghost->y < ghost->next_y) ghost->y++;
-      if (ghost->y > ghost->next_y) ghost->y--;
+  if (ghost->x == ghost->next_x && ghost->y == ghost->next_y) {
+    ghost->moving = false;
+  } else {
+    switch (ghost->direction)
+    {
+      case GHOST_UP:
+        ghost->y -= ghost->speed;
+        break;
+      case GHOST_DOWN:
+        ghost->y += ghost->speed;
+        break;
+      case GHOST_LEFT:
+        ghost->x -= ghost->speed;
+        break;
+      case GHOST_RIGHT:
+        ghost->x += ghost->speed;
+        break;
+      default:
+        break;
     }
   }
 }
 
 GhostDirection ghost_get_direction(Map *map, Ghost *ghost, Player *player) 
 {
-  GhostDirection directions[4];
+  GhostDirection directions[3];
   int num_directions = 0;
-
-  ghost->direction = GHOST_UP;
 
   switch (ghost->direction)
   {
@@ -299,22 +287,18 @@ GhostDirection ghost_get_direction(Map *map, Ghost *ghost, Player *player)
       directions[num_directions++] = GHOST_LEFT;
       directions[num_directions++] = GHOST_RIGHT;
       directions[num_directions++] = GHOST_DOWN;
-      directions[num_directions++] = GHOST_DOWN;
       break;
     case GHOST_DOWN:
       directions[num_directions++] = GHOST_LEFT;
-      directions[num_directions++] = GHOST_UP;
       directions[num_directions++] = GHOST_UP;
       directions[num_directions++] = GHOST_RIGHT;
       break;
     case GHOST_LEFT:
       directions[num_directions++] = GHOST_DOWN;
       directions[num_directions++] = GHOST_UP;
-      directions[num_directions++] = GHOST_UP;
       directions[num_directions++] = GHOST_RIGHT;
       break;
     case GHOST_RIGHT:
-      directions[num_directions++] = GHOST_UP;
       directions[num_directions++] = GHOST_UP;
       directions[num_directions++] = GHOST_DOWN;
       directions[num_directions++] = GHOST_LEFT;
