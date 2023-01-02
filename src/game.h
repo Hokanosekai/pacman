@@ -6,6 +6,7 @@
 #include "player.h"
 #include "map.h"
 #include "ghost.h"
+#include "bonus.h"
 
 #define GHOST_AMOUNT 4
 #define START_BUTTON_ANIMATION_SPEED 20
@@ -22,31 +23,28 @@
 #define GAME_OVER_FONT_SIZE 50
 #define INSERT_COIN_FONT_SIZE 40
 
-#define HEART_FILE "../assets/sprites/heart.png"
 #define MAP_TEXTURE_FILE "../assets/textures/tiles5.png"
 
 #define PLAYER_TEXTURE_FILE "../assets/sprites/pacman2.png"
 #define GHOST_TEXTURE_FILE "../assets/sprites/ghost_%d.png"
 #define GHOST_ANIMATE_TEXTURE_FILE "../assets/sprites/ghost_animate.png"
 
-#define CHERRY_TEXTURE_FILE "../assets/sprites/cherry.png"
-#define STRAWBERRY_TEXTURE_FILE "../assets/sprites/strawberry.png"
+#define HEART_TEXTURE_FILE "../assets/sprites/heart.png"
 
 typedef struct {
     int width, height;
     int scale;
-    int score;
+    int score, level;
     Window *window;
     GameState state;
     Player *player;
     Map *map;
     Ghost *ghosts[GHOST_AMOUNT];
     SDL_Texture *heart_texture;
-    SDL_Texture bonus_textures[2];
+    Bonus *bonus;
     int start_button_animation_frame;
     char **best_scores;
     int number_of_dot, number_of_power_pellet;
-    int level;
 } Game;
 
 /**

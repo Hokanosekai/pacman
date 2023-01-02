@@ -7,6 +7,7 @@
 #include "player.h"
 #include "map.h"
 #include "map_tile.h"
+#include "bonus.h"
 
 #define _XOPEN_SOURCE 500
 #define FPS 60
@@ -24,9 +25,7 @@ Game *game_create(int width, int height, int scale)
 
   // init game window for rendering
   game->window = window_create("Pacman", width, height);
-  if (game->window == NULL) {
-    return NULL;
-  }
+  if (game->window == NULL) return NULL;
 
   // loading font
   window_load_font(game->window, FONT_FILE, 16);
@@ -34,18 +33,8 @@ Game *game_create(int width, int height, int scale)
   // loading textures
   window_load_texture(
     game->window, 
-    HEART_FILE, 
+    HEART_TEXTURE_FILE, 
     &game->heart_texture
-  );
-  window_load_texture(
-    game->window,
-    CHERRY_TEXTURE_FILE,
-    &game->bonus_textures[0]
-  );
-  window_load_texture(
-    game->window,
-    STRAWBERRY_TEXTURE_FILE,
-    &game->bonus_textures[1]
   );
 
   // init map
@@ -54,9 +43,7 @@ Game *game_create(int width, int height, int scale)
     LEVEL_FILE, 
     MAP_TEXTURE_FILE
   );
-  if (game->map == NULL) {
-    return NULL;
-  }
+  if (game->map == NULL) return NULL;
 
   // init game score
   game->score = 0;
@@ -68,15 +55,21 @@ Game *game_create(int width, int height, int scale)
 
   // init player
   game->player = player_create(game->window);
+  if (game->player == NULL) return NULL;
 
   // init ghost
   for (int i = 0; i < GHOST_AMOUNT; i++)
   {
     game->ghosts[i] = ghost_create(game->window, i+1);
+    if (game->ghosts[i] == NULL) return NULL;
   }
 
+  // init Bonus
+  game->bonus = bonus_create(game->window, game->map);
+  if (game->bonus == NULL) return NULL;
+
   printf("Loading best scores...\n");
-  game_load_best_scores(game);
+  //game_load_best_scores(game);
   
   return game;
 }
@@ -317,8 +310,9 @@ void display_best_scores(Game *game)
 {
   char str[255];
   int score;
-  char name[100];
+  char name[100]; 
   for (int i = 0; i < 5; i++) {
+    printf("%s", game->best_scores[i]);
     sscanf(game->best_scores[i], "%s %d", name, &score);
     sprintf(str, "%s. %d", name, score);
     window_draw_text(
@@ -340,7 +334,7 @@ void game_state_menu_draw(Game *game)
   }
 
   display_start_button(game);
-  display_best_scores(game);
+  //display_best_scores(game);
 
   const Uint8 *state = SDL_GetKeyboardState(NULL);
   if (state[SDL_SCANCODE_RETURN]) {
