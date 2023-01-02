@@ -8,7 +8,7 @@
 #include "ghost.h"
 
 #define GHOST_AMOUNT 4
-#define START_BUTTON_ANIMATION_SPEED 2
+#define START_BUTTON_ANIMATION_SPEED 20
 
 #define NUMBER_OF_DOT 205
 #define NUMBER_OF_POWER_PELLET 4
@@ -17,7 +17,10 @@
 #define LEVEL_FILE "../data/level.txt"
 
 #define FONT_FILE "../assets/fonts/OpenSans.ttf"
-#define FONT_SIZE 20
+
+#define DEFAULT_FONT_SIZE 20
+#define GAME_OVER_FONT_SIZE 50
+#define INSERT_COIN_FONT_SIZE 40
 
 #define HEART_FILE "../assets/sprites/heart.png"
 #define MAP_TEXTURE_FILE "../assets/textures/tiles5.png"
@@ -37,7 +40,7 @@ typedef struct {
     Ghost *ghosts[GHOST_AMOUNT];
     SDL_Texture *heart_texture;
     int start_button_animation_frame;
-    int best_scores[5];
+    char **best_scores;
     int number_of_dot, number_of_power_pellet;
     int level;
 } Game;
@@ -130,11 +133,32 @@ void display_level(Game *game);
 void game_state_game_over_draw(Game *game);
 
 /**
+ * @brief Display the game over text
+ * @param game Game
+ */
+void display_game_over(Game *game);
+
+/**
+ * @brief Display the insert name field
+ * @param game Game
+ */
+void display_insert_name(Game *game);
+
+/**
+ * @brief Pseudo input
+ * @param game Game
+ * @param event Event
+ * @param pseudo Pseudo
+*/
+void game_input(Game *game, SDL_Event *event, char *pseudo);
+
+/**
  * @brief Insert a score in the best scores
  * @param game Game
  * @param score Score
+ * @param pseudo Pseudo
  */
-void game_insert_score(Game *game, int score);
+void game_insert_score(Game *game, int score, char *pseudo);
 
 /**
  * @brief Save the best scores

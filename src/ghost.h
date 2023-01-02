@@ -32,8 +32,10 @@ typedef struct {
   int animation_frame, animation_timer;
   GhostDirection direction, next_direction;
   SDL_Texture *sprite;
+  SDL_Texture *scared_sprite;
   bool moving;
   bool is_active;
+  bool is_scared;
 } Ghost;
 
 /**
@@ -84,13 +86,6 @@ void ghost_reset(Ghost *ghost);
  * @return True if the ghost is colliding with the player, false otherwise
  */
 bool ghost_check_collision(Ghost *ghost, Player *player);
-
-/**
- * @brief Animate the ghost
- * @param ghost The ghost to animate
- * @param window The window to animate the ghost in
- */
-void ghost_animation(Ghost *ghost, Window *window);
 
 /**
  * @brief Get the direction of the ghost

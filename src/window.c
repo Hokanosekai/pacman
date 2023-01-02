@@ -86,8 +86,12 @@ void window_draw_rect(Window *window, SDL_Rect *rect, SDL_Color color)
   }
 }
 
-void window_draw_line(Window *window, int x1, int y1, int x2, int y2, SDL_Color color)
-{
+void window_draw_line(
+  Window *window, 
+  int x1, int y1, 
+  int x2, int y2, 
+  SDL_Color color
+) {
   if (SDL_SetRenderDrawColor(window->renderer, color.r, color.g, color.b, color.a) != 0) {
     fprintf(stderr, "Erreur lors du rendu de la ligne : %s\n", SDL_GetError());
     cleanup(window->window, window->renderer, NULL);
@@ -100,8 +104,12 @@ void window_draw_line(Window *window, int x1, int y1, int x2, int y2, SDL_Color 
   }
 }
 
-void window_draw_circle(Window *window, int x, int y, int radius, SDL_Color color)
-{
+void window_draw_circle(
+  Window *window, 
+  int x, int y, 
+  int radius, 
+  SDL_Color color
+) {
   if (SDL_SetRenderDrawColor(window->renderer, color.r, color.g, color.b, color.a) != 0) {
     fprintf(stderr, "Erreur lors du rendu du cercle : %s\n", SDL_GetError());
     cleanup(window->window, window->renderer, NULL);
@@ -122,8 +130,14 @@ void window_draw_circle(Window *window, int x, int y, int radius, SDL_Color colo
   }
 }
 
-void window_draw_text(Window *window, int x, int y, const char *text, SDL_Color color)
-{
+void window_draw_text(
+  Window *window, 
+  int x, int y, 
+  const char *text, 
+  int font_size, 
+  SDL_Color color, 
+  TextAlign align
+) {
   SDL_Surface* surface = TTF_RenderText_Solid(window->font, text, color);
   if (surface == NULL) {
     fprintf(stderr, "Erreur lors du chargement de l'image : %s\n", SDL_GetError());
@@ -139,7 +153,20 @@ void window_draw_text(Window *window, int x, int y, const char *text, SDL_Color 
     return;
   }
 
-  SDL_Rect rect = {x, y, 100, 16};
+  switch (align)
+  {
+    case ALIGN_LEFT:
+      x = x;
+      break;
+    case ALIGN_CENTER:
+      x = x - (strlen(text) * 8) / 2;
+      break;
+    case ALIGN_RIGHT:
+      x = x - (strlen(text) * 8);
+      break;
+  }
+
+  SDL_Rect rect = {x, y - (font_size/2), strlen(text) * 8, font_size};
   if (SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h) != 0) {
     fprintf(stderr, "Erreur lors de la récupération des dimensions de la texture : %s", SDL_GetError());
     cleanup(window->window, window->renderer, texture);
@@ -152,8 +179,12 @@ void window_draw_text(Window *window, int x, int y, const char *text, SDL_Color 
   }
 }
 
-void window_draw_texture(Window *window, SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst)
-{
+void window_draw_texture(
+  Window *window, 
+  SDL_Texture *texture, 
+  SDL_Rect *src, 
+  SDL_Rect *dst
+) {
   if (SDL_RenderCopy(window->renderer, texture, src, dst) != 0) {
     fprintf(stderr, "Erreur lors du rendu de la texture : %s", SDL_GetError());
     cleanup(window->window, window->renderer, texture);
@@ -161,8 +192,11 @@ void window_draw_texture(Window *window, SDL_Texture *texture, SDL_Rect *src, SD
   }
 }
 
-void window_load_texture(Window *window, const char *path, SDL_Texture **texture)
-{
+void window_load_texture(
+  Window *window, 
+  const char *path, 
+  SDL_Texture **texture
+) {
   SDL_Surface* surface = IMG_Load(path);
   if (surface == NULL) {
       fprintf(stderr, "Erreur lors du chargement de l'image : %s\n", SDL_GetError());
@@ -189,8 +223,13 @@ void window_load_font(Window *window, const char *path, int size)
   }
 }
 
-void window_rotate_texture(Window *window, SDL_Texture *texture, SDL_Rect *rect, double angle, SDL_RendererFlip flip)
-{
+void window_rotate_texture(
+  Window *window, 
+  SDL_Texture *texture, 
+  SDL_Rect *rect, 
+  double angle, 
+  SDL_RendererFlip flip
+) {
   int w, h;
   SDL_QueryTexture(texture, NULL, NULL, &w, &h);
   SDL_Point center = { w/2, h/2 };
@@ -202,8 +241,14 @@ void window_rotate_texture(Window *window, SDL_Texture *texture, SDL_Rect *rect,
 }
 
 
-void window_draw_sprite(Window *window, SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst, double angle, SDL_RendererFlip flip)
-{
+void window_draw_sprite(
+  Window *window, 
+  SDL_Texture *texture, 
+  SDL_Rect *src, 
+  SDL_Rect *dst, 
+  double angle, 
+  SDL_RendererFlip flip
+) {
   SDL_Point center = { src->w/2, src->h/2 };
   if (SDL_RenderCopyEx(window->renderer, texture, src, dst, angle, &center, flip) != 0) {
     fprintf(stderr, "Erreur lors du rendu de la texture : %s", SDL_GetError());

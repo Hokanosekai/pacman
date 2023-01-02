@@ -12,6 +12,12 @@
 #define WHITE_COLOR (SDL_Color) { 255, 255, 255, 255 }
 #define BLACK_COLOR (SDL_Color) { 0, 0, 0, 255 }
 
+typedef enum {
+    ALIGN_LEFT,
+    ALIGN_CENTER,
+    ALIGN_RIGHT
+} TextAlign;
+
 typedef struct {
     SDL_Window *window;
     SDL_Renderer *renderer;
@@ -29,7 +35,11 @@ typedef struct {
  * @param renderer SDL_Renderer
  * @param texture SDL_Texture
  */
-void cleanup(SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture);
+void cleanup(
+    SDL_Window* window, 
+    SDL_Renderer* renderer, 
+    SDL_Texture* texture
+);
 
 /**
  * @brief Create a Window object
@@ -64,7 +74,11 @@ void window_update(Window *window);
  * @param texture SDL_Texture
  * @param rect SDL_Rect
  */
-void window_draw(Window *window, SDL_Texture *texture, SDL_Rect *rect);
+void window_draw(
+    Window *window, 
+    SDL_Texture *texture, 
+    SDL_Rect *rect
+);
 
 /**
  * @brief Draw a rectangle on the window
@@ -72,7 +86,11 @@ void window_draw(Window *window, SDL_Texture *texture, SDL_Rect *rect);
  * @param rect SDL_Rect
  * @param color SDL_Color
  */
-void window_draw_rect(Window *window, SDL_Rect *rect, SDL_Color color);
+void window_draw_rect(
+    Window *window, 
+    SDL_Rect *rect, 
+    SDL_Color color
+);
 
 /**
  * @brief Draw a line on the window
@@ -83,7 +101,12 @@ void window_draw_rect(Window *window, SDL_Rect *rect, SDL_Color color);
  * @param y2 Y2
  * @param color SDL_Color
  */
-void window_draw_line(Window *window, int x1, int y1, int x2, int y2, SDL_Color color);
+void window_draw_line(
+    Window *window, 
+    int x1, int y1, 
+    int x2, int y2, 
+    SDL_Color color
+);
 
 /**
  * @brief Draw a circle on the window
@@ -93,7 +116,12 @@ void window_draw_line(Window *window, int x1, int y1, int x2, int y2, SDL_Color 
  * @param radius Radius
  * @param color SDL_Color
  */
-void window_draw_circle(Window *window, int x, int y, int radius, SDL_Color color);
+void window_draw_circle(
+    Window *window, 
+    int x, int y, 
+    int radius, 
+    SDL_Color color
+);
 
 /**
  * @brief Draw a text on the window
@@ -102,8 +130,16 @@ void window_draw_circle(Window *window, int x, int y, int radius, SDL_Color colo
  * @param y Y
  * @param text Text
  * @param color SDL_Color
+ * @param align TextAlign
  */
-void window_draw_text(Window *window, int x, int y, const char *text, SDL_Color color);
+void window_draw_text(
+    Window *window, 
+    int x, int y, 
+    const char *text, 
+    int font_size, 
+    SDL_Color color, 
+    TextAlign align
+);
 
 /**
  * @brief Draw a texture on the window
@@ -112,7 +148,12 @@ void window_draw_text(Window *window, int x, int y, const char *text, SDL_Color 
  * @param src SDL_Rect
  * @param dst SDL_Rect
  */
-void window_draw_texture(Window *window, SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst);
+void window_draw_texture(
+    Window *window, 
+    SDL_Texture *texture, 
+    SDL_Rect *src, 
+    SDL_Rect *dst
+);
 
 /**
  * @brief Load a texture from a path
@@ -120,7 +161,11 @@ void window_draw_texture(Window *window, SDL_Texture *texture, SDL_Rect *src, SD
  * @param path Path
  * @param texture SDL_Texture
  */
-void window_load_texture(Window *window, const char *path, SDL_Texture **texture);
+void window_load_texture(
+    Window *window, 
+    const char *path, 
+    SDL_Texture **texture
+);
 
 /**
  * @brief Load a font from a path
@@ -128,7 +173,11 @@ void window_load_texture(Window *window, const char *path, SDL_Texture **texture
  * @param path Path
  * @param size Font size
  */
-void window_load_font(Window *window, const char *path, int size);
+void window_load_font(
+    Window *window, 
+    const char *path, 
+    int size
+);
 
 /**
  * @brief Rotate texture 
@@ -137,7 +186,13 @@ void window_load_font(Window *window, const char *path, int size);
  * @param angle Angle to rotate
  * @param flip Flip image verticaly
  */
-void window_rotate_texture(Window *window, SDL_Texture *texture, SDL_Rect *rect, double angle, SDL_RendererFlip flip);
+void window_rotate_texture(
+    Window *window, 
+    SDL_Texture *texture, 
+    SDL_Rect *rect, 
+    double angle, 
+    SDL_RendererFlip flip
+);
 
 /**
  * @brief Draw a sprite on the window
@@ -148,6 +203,13 @@ void window_rotate_texture(Window *window, SDL_Texture *texture, SDL_Rect *rect,
  * @param angle Angle to rotate
  * @param flip Flip image verticaly
  */
-void window_draw_sprite(Window *window, SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst, double angle, SDL_RendererFlip flip);
+void window_draw_sprite(
+    Window *window, 
+    SDL_Texture *texture, 
+    SDL_Rect *src, 
+    SDL_Rect *dst, 
+    double angle, 
+    SDL_RendererFlip flip
+);
 
 # endif

@@ -26,11 +26,14 @@ Ghost *ghost_create(Window *window, int ghost_number)
   ghost->animation_timer = 0;
   ghost->is_active = false;
   ghost->moving = false;
+  ghost->is_scared = false;
 
   char *sprite_path = malloc(sizeof(char) * 100);
   sprintf(sprite_path, GHOST_TEXTURE_FILE, ghost_number);
 
+  // Load ghost sprite
   window_load_texture(window, sprite_path, &ghost->sprite);
+  window_load_texture(window, GHOST_ANIMATE_TEXTURE_FILE, &ghost->scared_sprite);
 
   return ghost;
 }
@@ -40,8 +43,11 @@ void ghost_destroy(Ghost *ghost)
   if (ghost == NULL) {
     return;
   }
-
+  // Free ghost sprite
   SDL_DestroyTexture(ghost->sprite);
+  SDL_DestroyTexture(ghost->scared_sprite);
+
+  // Free ghost
   free(ghost);
 }
 
@@ -50,11 +56,18 @@ void ghost_render(Ghost *ghost, Window *window)
   SDL_Rect rect = {ghost->x, ghost->y, GHOST_SIZE, GHOST_SIZE};
   SDL_Rect src = {GHOST_SIZE * ghost->animation_frame, 0, GHOST_SIZE, GHOST_SIZE};
 
-  window_draw_sprite(window, ghost->sprite, &src, &rect, 0.0, SDL_FLIP_NONE);
+  if (ghost->is_scared) {
+    window_draw_sprite(window, ghost->scared_sprite, &src, &rect, 0.0, SDL_FLIP_NONE);
+  } else {
+    window_draw_sprite(window, ghost->sprite, &src, &rect, 0.0, SDL_FLIP_NONE);
+  }
 }
 
 void ghost_update(Map *map, Ghost *ghost, Player *player)
 {
+  if (player->invincible) ghost->is_scared = true;
+  else ghost->is_scared = false;
+
   // Update ghost animation
   ghost->animation_timer++;
   if (ghost->animation_timer > GHOST_ANIMATION_SPEED) {
@@ -142,6 +155,7 @@ void ghost_update(Map *map, Ghost *ghost, Player *player)
         break;
     }
 
+    // Check if the ghost is in an angle
     if (table[0] == 0 && table[2] == 1 && ghost->direction == GHOST_UP) {
       ghost->next_direction = GHOST_LEFT;
       next_x--;
@@ -201,6 +215,7 @@ void ghost_reset(Ghost *ghost)
   ghost->animation_timer = 0;
   ghost->is_active = false;
   ghost->moving = false;
+  ghost->is_scared = false;
 }
 
 void ghost_set_speed(Ghost *ghost, int speed)
@@ -243,11 +258,6 @@ bool ghost_check_collision(Ghost *ghost, Player *player)
   return distance < MAP_TILE_SIZE/2;
 }
 
-void ghost_animation(Ghost *ghost, Window *window)
-{
-  window_load_texture(window, GHOST_ANIMATE_TEXTURE_FILE, &ghost->sprite);
-}
-
 void ghost_move(Ghost *ghost)
 {
   if (ghost->x == ghost->next_x && ghost->y == ghost->next_y) {
@@ -278,6 +288,7 @@ GhostDirection ghost_get_direction(Map *map, Ghost *ghost, Player *player)
   GhostDirection directions[3];
   int num_directions = 0;
 
+  // Add directions to array based on ghost direction
   switch (ghost->direction)
   {
     case GHOST_UP:
@@ -304,6 +315,7 @@ GhostDirection ghost_get_direction(Map *map, Ghost *ghost, Player *player)
       break;
   }
 
+  // Get random direction
   int rand_direction = rand() % num_directions;
 
   return directions[rand_direction];

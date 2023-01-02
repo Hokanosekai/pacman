@@ -24,10 +24,12 @@ Game *game_create(int width, int height, int scale)
 
   // init game window for rendering
   game->window = window_create("Pacman", width, height);
-  window_load_font(game->window, FONT_FILE, 16);
   if (game->window == NULL) {
     return NULL;
   }
+
+  // loading font
+  window_load_font(game->window, FONT_FILE, 16);
 
   // loading textures
   window_load_texture(
@@ -63,9 +65,7 @@ Game *game_create(int width, int height, int scale)
     game->ghosts[i] = ghost_create(game->window, i+1);
   }
 
-  //game->number_of_dot = map_count_dots(game->map);
-  //game->number_of_power_pellet = map_count_power_pellets(game->map);
-
+  printf("Loading best scores...\n");
   game_load_best_scores(game);
   
   return game;
@@ -218,10 +218,8 @@ void game_check_collision(Game *game)
         player->lives--;
         if (player->lives == 0) {
           game->state = STATE_GAME_OVER;
-          game_insert_score(game, game->score);
-          game_save_best_scores(game);
         } else {
-          player_reset(player);
+          player_kill(player);
           for (int i = 0; i < GHOST_AMOUNT; i++) {
             ghost_reset(game->ghosts[i]);
           }
@@ -237,11 +235,27 @@ void game_reset(Game *game)
     return;
   }
 
+  // reset game
   game->score = 0;
   game->state = STATE_MENU;
+  game->level = 1;
+
+  // reset map
+  map_destroy(game->map);
+  game->map = map_init(
+    game->window, 
+    LEVEL_FILE, 
+    MAP_TEXTURE_FILE
+  );
+
+  // reset player
   player_reset(game->player);
+  player_reset_lives(game->player);
+
+  // reset ghosts
   for (int i = 0; i < GHOST_AMOUNT; i++) {
     ghost_reset(game->ghosts[i]);
+    ghost_set_speed(game->ghosts[i], GHOST_SPEED);
   }
 }
 
@@ -251,6 +265,7 @@ void game_next_level(Game *game)
     return;
   }
 
+  // reset map
   map_destroy(game->map);
   game->map = map_init(
     game->window, 
@@ -258,15 +273,19 @@ void game_next_level(Game *game)
     MAP_TEXTURE_FILE
   );
 
+  // update game
   game->level++;
   game->score += 1000;
+  game->state = STATE_GAME;
+
+  // reset player
   player_reset(game->player);
+  
+  // reset ghosts
   for (int i = 0; i < GHOST_AMOUNT; i++) {
     ghost_reset(game->ghosts[i]);
     ghost_set_speed(game->ghosts[i], game->ghosts[i]->speed++);
   }
-
-  game->state = STATE_GAME;
 }
 
 void display_start_button(Game *game)
@@ -274,22 +293,49 @@ void display_start_button(Game *game)
   char str[255];
   sprintf(str, "Insert Coin");
 
-  int x = game->width / 2 - (strlen(str));
-  int y = game->height / 2 - 50;
+  SDL_Color color = WHITE_COLOR;
+  int a = 0;
 
-  window_draw_text(game->window, x, y, str, WHITE_COLOR);
+  game->start_button_animation_frame++;
+  if (game->start_button_animation_frame > START_BUTTON_ANIMATION_SPEED) {
+    game->start_button_animation_frame = 0;
+    a += 5;
+    color = (SDL_Color) {255, 255, 255, a};
+    printf("a: %d\n", a);
+  }
+
+  if (a == 255) {
+    a = 0;
+  }
+
+  window_draw_text(
+    game->window, 
+    game->width / 2,
+    game->height / 2 - INSERT_COIN_FONT_SIZE, 
+    str, 
+    INSERT_COIN_FONT_SIZE, 
+    color,
+    ALIGN_CENTER
+  );
 }
 
 void display_best_scores(Game *game)
 {
   char str[255];
+  int score;
+  char name[100];
   for (int i = 0; i < 5; i++) {
-    if (game->best_scores[i] == 0) {
-      sprintf(str, "%d. ---", i + 1);
-    } else {
-      sprintf(str, "%d. %d", i + 1, game->best_scores[i]);
-    }
-    window_draw_text(game->window, 5, 5 + i * 20, str, WHITE_COLOR);
+    sscanf(game->best_scores[i], "%s %d", name, &score);
+    sprintf(str, "%s. %d", name, score);
+    window_draw_text(
+      game->window, 
+      game->width / 2, 
+      ((game->height / 4) * 3 - DEFAULT_FONT_SIZE) + (i * DEFAULT_FONT_SIZE), 
+      str, 
+      DEFAULT_FONT_SIZE, 
+      WHITE_COLOR,
+      ALIGN_CENTER
+    );
   }
 }
 
@@ -299,12 +345,7 @@ void game_state_menu_draw(Game *game)
     return;
   }
 
-  game->start_button_animation_frame++;
-  if (game->start_button_animation_frame > START_BUTTON_ANIMATION_SPEED) {
-    game->start_button_animation_frame = 0;
-    display_start_button(game);
-  }
-
+  display_start_button(game);
   display_best_scores(game);
 
   const Uint8 *state = SDL_GetKeyboardState(NULL);
@@ -318,7 +359,15 @@ void display_score(Game *game)
   char str[255];
   sprintf(str, "Score: %d", game->score);
 
-  window_draw_text(game->window, 5, 2, str, WHITE_COLOR);
+  window_draw_text(
+    game->window, 
+    5 + MAP_TILE_SIZE, 
+    12, 
+    str, 
+    DEFAULT_FONT_SIZE, 
+    WHITE_COLOR,
+    ALIGN_LEFT
+  );
 }
 
 void display_lives(Game *game)
@@ -334,7 +383,15 @@ void display_level(Game *game)
   char str[255];
   sprintf(str, "Level: %d", game->level);
 
-  window_draw_text(game->window, (game->width / 2) - 5, 2, str, WHITE_COLOR);
+  window_draw_text(
+    game->window, 
+    game->width / 2, 
+    12, 
+    str, 
+    DEFAULT_FONT_SIZE, 
+    WHITE_COLOR,
+    ALIGN_CENTER
+  );
 }
 
 void game_state_game_draw(Game *game)
@@ -343,36 +400,70 @@ void game_state_game_draw(Game *game)
     return;
   }
 
+  // if player eats all dots go to next level
+  if (game->player->number_of_dots_eaten == NUMBER_OF_DOT
+    && game->player->number_of_power_pellets_eaten == NUMBER_OF_POWER_PELLET) {
+    game_next_level(game);
+    return;
+  }
+
   // check collision
   game_check_collision(game);
 
+  // display game info
   display_score(game);
   display_lives(game);
   display_level(game);
 
+  // update and render player
   player_update(game->map, game->player);
-  for (int i = 0; i < GHOST_AMOUNT; i++) {
-    ghost_update(game->map, game->ghosts[i], game->player);
-  }
-
   player_render(game->player, game->window);
 
+  // update and render ghosts
   for (int i = 0; i < GHOST_AMOUNT; i++)
   {
+    ghost_update(game->map, game->ghosts[i], game->player);
     ghost_render(game->ghosts[i], game->window);
-    if (game->player->invincible) {
-      ghost_animation(game->ghosts[i], game->window);
-    } else {
-      char *path = malloc(sizeof(char) * 255);
-      sprintf(path, GHOST_TEXTURE_FILE, i + 1);
-      window_load_texture(game->window, path, &game->ghosts[i]->sprite);
-    }
   }
+}
 
-  if (game->player->number_of_dots_eaten == NUMBER_OF_DOT
-    && game->player->number_of_power_pellets_eaten == NUMBER_OF_POWER_PELLET) {
-      game_next_level(game);
-  }
+void display_game_over(Game *game)
+{
+  char str[255];
+  sprintf(str, "Game Over");
+
+  window_draw_text(
+    game->window, 
+    game->width / 2, 
+    game->height / 3 - GAME_OVER_FONT_SIZE, 
+    str, 
+    GAME_OVER_FONT_SIZE, 
+    WHITE_COLOR,
+    ALIGN_CENTER
+  );
+}
+
+void display_insert_name(Game *game)
+{
+  char str[255];
+  sprintf(str, "Insert Name");
+
+  window_draw_text(
+    game->window, 
+    game->width / 2, 
+    game->height / 2 - DEFAULT_FONT_SIZE, 
+    str, 
+    DEFAULT_FONT_SIZE, 
+    WHITE_COLOR,
+    ALIGN_CENTER
+  );
+}
+
+void game_input(Game *game, SDL_Event *event, char *pseudo)
+{
+  if (game == NULL || event == NULL) return;
+
+
 }
 
 void game_state_game_over_draw(Game *game)
@@ -381,16 +472,43 @@ void game_state_game_over_draw(Game *game)
     return;
   }
 
-  SDL_Rect rect = { 0, 0, 30, 30 };
+  int min_score;
+  char min_pseudo[255];
+  sscanf(game->best_scores[4], "%s %d", min_pseudo, &min_score);
+  if (game->score < min_score) {
+    game_reset(game);
+    return;
+  }
 
-  window_draw_rect(game->window, &rect, GREEN_COLOR);
+  display_game_over(game);
+  display_insert_name(game);
+
+  char pseudo[255];
+
+  const Uint8 *state = SDL_GetKeyboardState(NULL);
+  if (state[SDL_SCANCODE_RETURN]) {
+    game_insert_score(game, game->score, pseudo);
+    game_save_best_scores(game);
+    game_reset(game);
+  }
+
+  if (state[SDL_SCANCODE_BACKSPACE]) {
+    pseudo[strlen(pseudo) - 1] = '\0';
+  }
+
+  if (state[SDL_SCANCODE_A]) {
+    strcat(pseudo, "A");
+  }
 }
 
-void game_insert_score(Game *game, int score)
+void game_insert_score(Game *game, int score, char *pseudo)
 {
   int index = 0;
   for (int i = 0; i < 5; i++) {
-    if (game->best_scores[i] > score) {
+    int current_score;
+    char pseudo[255];
+    sscanf(game->best_scores[i], "%s %d", pseudo, &current_score);
+    if (current_score > score) {
       index++;
     } else {
       break;
@@ -401,7 +519,8 @@ void game_insert_score(Game *game, int score)
     game->best_scores[i+1] = game->best_scores[i];
   }
 
-  game->best_scores[index] = score;
+  game->best_scores[index] = malloc(sizeof(char) * 255);
+  sprintf(game->best_scores[index], "%s %d", pseudo, score);
 }
 
 void game_save_best_scores(Game *game)
@@ -412,7 +531,7 @@ void game_save_best_scores(Game *game)
   }
 
   for (int i = 0; i < 5; i++) {
-    fprintf(fp, "%d\n", game->best_scores[i]);
+    fprintf(fp, "%s\n", game->best_scores[i]);
   }
 
   fclose(fp);
@@ -429,13 +548,16 @@ void game_load_best_scores(Game *game)
   int i = 0;
 
   while (fgets(str, 255, fp) != NULL) {
-    game->best_scores[i] = atoi(str);
+    game->best_scores[i] = malloc(sizeof(char) * 255);
+    game->best_scores[i] = str;
+    printf("%s", game->best_scores[i]);
     i++;
   }
 
   if (i < 5) {
     for (int j = i; j < 5; j++) {
-      game->best_scores[j] = 0;
+      game->best_scores[j] = malloc(sizeof(char) * 255);
+      sprintf(game->best_scores[j], "AAA 0");
     }
   }
 

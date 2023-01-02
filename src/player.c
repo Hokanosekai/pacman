@@ -178,6 +178,19 @@ void player_move_to_spawn(Player *player)
   player->next_direction = PLAYER_NULL;
 }
 
+void player_kill(Player *player)
+{
+  player->dead = true;
+  player->lives--;
+  player_move_to_spawn(player);
+  player->moving = false;
+  player->invincible = false;
+  player->invincible_timer = 0;
+  player->animation_frame = 0;
+  player->animation_timer = 0;
+  player->speed_timer = 0;
+}
+
 void player_reset(Player *player)
 {
   player->speed_timer = 0;
@@ -190,4 +203,9 @@ void player_reset(Player *player)
   player->number_of_power_pellets_eaten = 0;
   player->number_of_ghosts_eaten = 0;
   player_move_to_spawn(player);
+}
+
+void player_reset_lives(Player *player)
+{
+  player->lives = PLAYER_LIVES;
 }

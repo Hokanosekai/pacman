@@ -78,10 +78,22 @@ void player_move_to_spawn(Player *player);
 void player_render(Player *player, Window *window);
 
 /**
+ * @brief Kill the Player object
+ * @param player Player
+ */
+void player_kill(Player *player);
+
+/**
  * @brief Reset the Player object
  * @param player Player
  */
 void player_reset(Player *player);
+
+/**
+ * @brief Reset the Player lives
+ * @param player Player
+ */
+void player_reset_lives(Player *player);
 
 /**
  * @brief Destroy the Player object
