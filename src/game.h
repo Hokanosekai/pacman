@@ -1,12 +1,12 @@
 # ifndef GAME_H
 # define GAME_H
 
+#include "bonus.h"
 #include "game_state.h"
 #include "window.h"
 #include "player.h"
 #include "map.h"
 #include "ghost.h"
-#include "bonus.h"
 
 #define GHOST_AMOUNT 4
 #define START_BUTTON_ANIMATION_SPEED 20
