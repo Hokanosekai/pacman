@@ -189,6 +189,7 @@ void player_kill(Player *player)
   player->animation_frame = 0;
   player->animation_timer = 0;
   player->speed_timer = 0;
+  player->number_of_ghosts_eaten = 0;
 }
 
 void player_reset(Player *player)

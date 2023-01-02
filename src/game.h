@@ -29,6 +29,9 @@
 #define GHOST_TEXTURE_FILE "../assets/sprites/ghost_%d.png"
 #define GHOST_ANIMATE_TEXTURE_FILE "../assets/sprites/ghost_animate.png"
 
+#define CHERRY_TEXTURE_FILE "../assets/sprites/cherry.png"
+#define STRAWBERRY_TEXTURE_FILE "../assets/sprites/strawberry.png"
+
 typedef struct {
     int width, height;
     int scale;
@@ -39,6 +42,7 @@ typedef struct {
     Map *map;
     Ghost *ghosts[GHOST_AMOUNT];
     SDL_Texture *heart_texture;
+    SDL_Texture bonus_textures[2];
     int start_button_animation_frame;
     char **best_scores;
     int number_of_dot, number_of_power_pellet;

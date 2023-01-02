@@ -37,6 +37,16 @@ Game *game_create(int width, int height, int scale)
     HEART_FILE, 
     &game->heart_texture
   );
+  window_load_texture(
+    game->window,
+    CHERRY_TEXTURE_FILE,
+    &game->bonus_textures[0]
+  );
+  window_load_texture(
+    game->window,
+    STRAWBERRY_TEXTURE_FILE,
+    &game->bonus_textures[1]
+  );
 
   // init map
   game->map = map_init(
@@ -215,14 +225,9 @@ void game_check_collision(Game *game)
         player->number_of_ghosts_eaten++;
         game->score += 100 * player->number_of_ghosts_eaten;
       } else {
-        player->lives--;
-        if (player->lives == 0) {
-          game->state = STATE_GAME_OVER;
-        } else {
-          player_kill(player);
-          for (int i = 0; i < GHOST_AMOUNT; i++) {
-            ghost_reset(game->ghosts[i]);
-          }
+        player_kill(player);
+        for (int i = 0; i < GHOST_AMOUNT; i++) {
+          ghost_reset(game->ghosts[i]);
         }
       }
     }
@@ -293,30 +298,19 @@ void display_start_button(Game *game)
   char str[255];
   sprintf(str, "Insert Coin");
 
-  SDL_Color color = WHITE_COLOR;
-  int a = 0;
-
   game->start_button_animation_frame++;
   if (game->start_button_animation_frame > START_BUTTON_ANIMATION_SPEED) {
     game->start_button_animation_frame = 0;
-    a += 5;
-    color = (SDL_Color) {255, 255, 255, a};
-    printf("a: %d\n", a);
+     window_draw_text(
+      game->window, 
+      game->width / 2,
+      game->height / 2 - INSERT_COIN_FONT_SIZE, 
+      str, 
+      INSERT_COIN_FONT_SIZE, 
+      WHITE_COLOR,
+      ALIGN_CENTER
+    );
   }
-
-  if (a == 255) {
-    a = 0;
-  }
-
-  window_draw_text(
-    game->window, 
-    game->width / 2,
-    game->height / 2 - INSERT_COIN_FONT_SIZE, 
-    str, 
-    INSERT_COIN_FONT_SIZE, 
-    color,
-    ALIGN_CENTER
-  );
 }
 
 void display_best_scores(Game *game)
@@ -404,6 +398,12 @@ void game_state_game_draw(Game *game)
   if (game->player->number_of_dots_eaten == NUMBER_OF_DOT
     && game->player->number_of_power_pellets_eaten == NUMBER_OF_POWER_PELLET) {
     game_next_level(game);
+    return;
+  }
+
+  // if player has no lives go to game over
+  if (game->player->lives == 0) {
+    game->state = STATE_GAME_OVER;
     return;
   }
 
