@@ -79,14 +79,19 @@ void game_destroy(Game *game)
   if (game == NULL) {
     return;
   }
-
+  // destroy game window
   window_destroy(game->window);
+  // destroy player
   player_destroy(game->player);
+  // destroy ghosts
   for (int i = 0; i < GHOST_AMOUNT; i++)
   {
     ghost_destroy(game->ghosts[i]);
   }
+  // destroy map
   map_destroy(game->map);
+  // destroy bonus
+  bonus_destroy(game->bonus);
   free(game);
 }
 
@@ -225,6 +230,16 @@ void game_check_collision(Game *game)
       }
     }
   }
+
+  // check player collision with bonus
+  if (bonus_check_collision(game->bonus, player)) {
+    bonus_destroy(game->bonus);
+    game->bonus = bonus_create(
+      game->window,
+      game->map
+    );
+    game->score += 1000;
+  }
 }
 
 void game_reset(Game *game)
@@ -249,6 +264,13 @@ void game_reset(Game *game)
   // reset player
   player_reset(game->player);
   player_reset_lives(game->player);
+
+  // reset bonus
+  bonus_destroy(game->bonus);
+  game->bonus = bonus_create(
+    game->window,
+    game->map
+  );
 
   // reset ghosts
   for (int i = 0; i < GHOST_AMOUNT; i++) {
@@ -278,6 +300,13 @@ void game_next_level(Game *game)
 
   // reset player
   player_reset(game->player);
+
+  // reset bonus
+  bonus_destroy(game->bonus);
+  game->bonus = bonus_create(
+    game->window,
+    game->map
+  );
   
   // reset ghosts
   for (int i = 0; i < GHOST_AMOUNT; i++) {
@@ -408,6 +437,10 @@ void game_state_game_draw(Game *game)
   display_score(game);
   display_lives(game);
   display_level(game);
+
+  // update and render bonus
+  bonus_update(game->bonus, game->map, game->player);
+  bonus_render(game->bonus, game->window, game->map);
 
   // update and render player
   player_update(game->map, game->player);

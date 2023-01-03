@@ -3,6 +3,7 @@
 #include "bonus.h"
 #include "map.h"
 #include "window.h"
+#include "player.h"
 
 Bonus *bonus_create(Window *window, Map *map)
 {
@@ -15,6 +16,7 @@ Bonus *bonus_create(Window *window, Map *map)
   bonus->animation_timer = 0;
   bonus->render_timer = 0;
   bonus->is_activate = false;
+  bonus->timer = 0;
 
   // Generate x and y position
   bonus_generate_position(map, bonus);
@@ -23,6 +25,14 @@ Bonus *bonus_create(Window *window, Map *map)
   // Generate sprite
   bonus_generate_texture(bonus);
   if (&bonus->src == NULL) return NULL;
+
+  // Generate interval
+  bonus_generate_interval(bonus);
+  if (&bonus->interval == NULL) return NULL;
+
+  printf("Bonus created\n");
+  printf("Bonus position: %d, %d\n", bonus->x, bonus->y);
+  printf("Bonus interval: %d\n", bonus->interval);
 
   return bonus;
 }
@@ -35,13 +45,21 @@ void bonus_destroy(Bonus *bonus)
   free(bonus); 
 }
 
-void bonus_render(Bonus *bonus, Window *window)
+void bonus_render(Bonus *bonus, Window *window, Map *map)
 {
   if (!bonus->is_activate) return;
 
-  SDL_Rect dest = {bonus->x, bonus->y, MAP_TILE_SIZE, MAP_TILE_SIZE};
+  SDL_Rect dest = {bonus->x, bonus->y, BONUS_SPRITE_SIZE, BONUS_SPRITE_SIZE};
 
+  // Increment render timer
   bonus->render_timer++;
+
+  // Deactivate bonus if render timer is greater than BONUS_RENDER_TIMER
+  if (bonus->render_timer >= BONUS_RENDER_TIMER) {
+    bonus_reset(bonus, map);
+  }
+
+  // Blink bonus if render timer is greater than BONUS_RENDER_BLINK_TIMER
   if (bonus->render_timer >= BONUS_RENDER_BLINK_TIMER) {
     bonus->animation_timer++;
     if (bonus->animation_timer > BONUS_ANIMATION_TIMER) {
@@ -51,14 +69,18 @@ void bonus_render(Bonus *bonus, Window *window)
   } else {
     window_draw_texture(window, bonus->texture, &bonus->src, &dest);
   }
-  if (bonus->render_timer >= BONUS_RENDER_TIMER) {
-    bonus_deactivate(bonus);
-  }
 }
 
-void bonus_update(Bonus *bonus)
+void bonus_update(Bonus *bonus, Map *map, Player *player)
 {
-  
+  if (bonus->is_activate) return;
+
+  bonus->timer++;
+  if (bonus->timer >= bonus->interval) {
+    printf("Bonus activated\n");
+    bonus_activate(bonus);
+    bonus->timer = 0;
+  }
 }
 
 void bonus_activate(Bonus *bonus)
@@ -73,16 +95,40 @@ void bonus_deactivate(Bonus *bonus)
 
 void bonus_generate_position(Map *map, Bonus *bonus)
 {
-
+  bonus->x = 17 * BONUS_SPRITE_SIZE;
+  bonus->y = 16 * BONUS_SPRITE_SIZE;
 }
 
 void bonus_generate_texture(Bonus *bonus)
 {
-  int x_offset = rand() % BONUS_SPRITES_NUMBER - 1;
+  int x_offset = rand() % BONUS_SPRITES_NUMBER;
   bonus->src = (SDL_Rect) {
-    x_offset * MAP_TILE_SIZE,
+    x_offset * BONUS_SPRITE_SIZE,
     0, 
-    MAP_TILE_SIZE, 
-    MAP_TILE_SIZE
+    BONUS_SPRITE_SIZE, 
+    BONUS_SPRITE_SIZE
   };
+}
+
+void bonus_generate_interval(Bonus *bonus)
+{
+  bonus->interval = rand() % BONUS_MAX_INTERVAL + BONUS_MIN_INTERVAL;
+}
+
+bool bonus_check_collision(Bonus *bonus, Player *player)
+{
+  return player->x == bonus->x && player->y == bonus->y && bonus->is_activate;
+}
+
+void bonus_reset(Bonus *bonus, Map *map)
+{
+  bonus->is_activate = false;
+  bonus->animation_timer = 0;
+  bonus->render_timer = 0;
+  bonus->timer = 0;
+
+  // Regenerate position, sprite and interval
+  bonus_generate_interval(bonus);
+  bonus_generate_texture(bonus);
+  bonus_generate_position(map, bonus);
 }
