@@ -30,10 +30,6 @@ Bonus *bonus_create(Window *window, Map *map)
   bonus_generate_interval(bonus);
   if (&bonus->interval == NULL) return NULL;
 
-  printf("Bonus created\n");
-  printf("Bonus position: %d, %d\n", bonus->x, bonus->y);
-  printf("Bonus interval: %d\n", bonus->interval);
-
   return bonus;
 }
 
@@ -55,7 +51,8 @@ void bonus_render(Bonus *bonus, Window *window, Map *map)
   bonus->render_timer++;
 
   // Deactivate bonus if render timer is greater than BONUS_RENDER_TIMER
-  if (bonus->render_timer >= BONUS_RENDER_TIMER) {
+  if (bonus->render_timer == BONUS_RENDER_TIMER) {
+    bonus_deactivate(bonus);
     bonus_reset(bonus, map);
   }
 
@@ -77,7 +74,6 @@ void bonus_update(Bonus *bonus, Map *map, Player *player)
 
   bonus->timer++;
   if (bonus->timer >= bonus->interval) {
-    printf("Bonus activated\n");
     bonus_activate(bonus);
     bonus->timer = 0;
   }
@@ -95,13 +91,34 @@ void bonus_deactivate(Bonus *bonus)
 
 void bonus_generate_position(Map *map, Bonus *bonus)
 {
-  bonus->x = 17 * BONUS_SPRITE_SIZE;
-  bonus->y = 16 * BONUS_SPRITE_SIZE;
+  // Generate x and y position
+  int x = rand() % MAP_TILE_SIZE;
+  int y = rand() % MAP_TILE_SIZE;
+
+  // Get tile
+  Tiles tile = map_get_tile(map, x, y);
+
+  // Check if tile is a dot
+  while (tile != TILE_DOT)
+  {
+    x = rand() % MAP_TILE_SIZE;
+    y = rand() % MAP_TILE_SIZE;
+    tile = map_get_tile(map, x, y);
+  }
+
+  // Set bonus position
+  bonus->x = x * BONUS_SPRITE_SIZE;
+  bonus->y = y * BONUS_SPRITE_SIZE;
+
+  // Set tile to empty
+  map_set_tile(map, x, y, TILE_SPACE);
 }
 
 void bonus_generate_texture(Bonus *bonus)
 {
+  // Generate random sprite
   int x_offset = rand() % BONUS_SPRITES_NUMBER;
+  // Set sprite
   bonus->src = (SDL_Rect) {
     x_offset * BONUS_SPRITE_SIZE,
     0, 

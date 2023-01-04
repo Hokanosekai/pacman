@@ -17,13 +17,13 @@
 #define SCORE_FILE "../data/scores.txt"
 #define LEVEL_FILE "../data/level.txt"
 
-#define FONT_FILE "../assets/fonts/OpenSans.ttf"
+#define FONT_FILE "../assets/fonts/font.ttf"
 
 #define DEFAULT_FONT_SIZE 20
 #define GAME_OVER_FONT_SIZE 50
 #define INSERT_COIN_FONT_SIZE 40
 
-#define MAP_TEXTURE_FILE "../assets/textures/tiles5.png"
+#define MAP_TEXTURE_FILE "../assets/textures/tileset.png"
 
 #define PLAYER_TEXTURE_FILE "../assets/sprites/pacman2.png"
 #define GHOST_TEXTURE_FILE "../assets/sprites/ghost_%d.png"

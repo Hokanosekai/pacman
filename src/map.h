@@ -50,6 +50,15 @@ void map_destroy(Map *map);
 Tiles map_get_tile(Map *map, int x, int y);
 
 /**
+ * @brief Set the Tile object
+ * @param map Map
+ * @param x Tile x position
+ * @param y Tile y position
+ * @param tile Tile
+ */
+void map_set_tile(Map *map, int x, int y, Tiles tile);
+
+/**
  * @brief Check collision between the player and the map
  * @param map Map
  * @param x Player x position

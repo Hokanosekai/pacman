@@ -52,5 +52,5 @@ Mkfile.old
 dkms.conf
 
 # Personal
-debug/pacman
+bin/pacman
 .vscode/**

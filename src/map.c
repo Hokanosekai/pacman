@@ -213,6 +213,19 @@ Tiles map_get_tile(Map *map, int x, int y)
   return map->map[x][y];
 }
 
+void map_set_tile(Map *map, int x, int y, Tiles tile)
+{
+  if (map == NULL) {
+    return;
+  }
+
+  if (x < 0 || x >= map->cols || y < 0 || y >= map->rows) {
+    return;
+  }
+
+  map->map[x][y] = tile;
+}
+
 bool map_check_collision(Map *map, int x, int y)
 {
   if (map == NULL) {

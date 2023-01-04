@@ -2,18 +2,19 @@ CC = gcc
 CFLAGS = -g -Wall
 CLIBS = -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lm
 
-DEBUG_DIR = ../debug
+BIN_DIR = ../bin
 OUTPUT_NAME = pacman
 
-OBJS = $(DEBUG_DIR)/main.o $(DEBUG_DIR)/bonus.o $(DEBUG_DIR)/game.o $(DEBUG_DIR)/window.o $(DEBUG_DIR)/player.o $(DEBUG_DIR)/map.o $(DEBUG_DIR)/ghost.o 
+OBJS = $(BIN_DIR)/main.o $(BIN_DIR)/bonus.o $(BIN_DIR)/game.o $(BIN_DIR)/window.o $(BIN_DIR)/player.o $(BIN_DIR)/map.o $(BIN_DIR)/ghost.o 
 
 all: pacman
 
 pacman: $(OBJS) 
-	$(CC) $(CFLAGS) -o $(DEBUG_DIR)/$(OUTPUT_NAME) $(OBJS) $(CLIBS)
+	$(CC) $(CFLAGS) -o $(BIN_DIR)/$(OUTPUT_NAME) $(OBJS) $(CLIBS)
 
-$(DEBUG_DIR)/%.o: %.c 
-	$(CC) $(CFLAGS) -c $< -o $(DEBUG_DIR)/$@ $(CLIBS)
+$(BIN_DIR)/%.o: %.c 
+	$(CC) $(CFLAGS) -c $< -o $(BIN_DIR)/$@ $(CLIBS)
 
 clean:
-			rm -f $(DEBUG_DIR)/*.o pacman
+			rm -f $(BIN_DIR)/*.o
+			rm -f $(BIN_DIR)/pacman
