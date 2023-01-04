@@ -92,7 +92,7 @@ void bonus_deactivate(Bonus *bonus)
 void bonus_generate_position(Map *map, Bonus *bonus)
 {
   // Generate x and y position
-  int x = rand() % MAP_TILE_SIZE;
+  /*int x = rand() % MAP_TILE_SIZE;
   int y = rand() % MAP_TILE_SIZE;
 
   // Get tile
@@ -111,7 +111,9 @@ void bonus_generate_position(Map *map, Bonus *bonus)
   bonus->y = y * BONUS_SPRITE_SIZE;
 
   // Set tile to empty
-  map_set_tile(map, x, y, TILE_SPACE);
+  map_set_tile(map, x, y, TILE_SPACE);*/
+  bonus->x = 17 * BONUS_SPRITE_SIZE;
+  bonus->y = 16 * BONUS_SPRITE_SIZE;
 }
 
 void bonus_generate_texture(Bonus *bonus)

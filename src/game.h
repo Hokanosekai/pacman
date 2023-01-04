@@ -27,7 +27,7 @@
 
 #define PLAYER_TEXTURE_FILE "../assets/sprites/pacman2.png"
 #define GHOST_TEXTURE_FILE "../assets/sprites/ghost_%d.png"
-#define GHOST_ANIMATE_TEXTURE_FILE "../assets/sprites/ghost_animate.png"
+#define GHOST_ANIMATE_TEXTURE_FILE "../assets/sprites/ghost_scared.png"
 
 #define HEART_TEXTURE_FILE "../assets/sprites/heart.png"
 
