@@ -69,7 +69,7 @@ Game *game_create(int width, int height, int scale)
   if (game->bonus == NULL) return NULL;
 
   printf("Loading best scores...\n");
-  //game_load_best_scores(game);
+  game_load_best_scores(game);
   
   return game;
 }
@@ -318,7 +318,7 @@ void game_next_level(Game *game)
 void display_start_button(Game *game)
 {
   char str[255];
-  sprintf(str, "Insert Coin");
+  sprintf(str, "Press Space to Start");
 
   game->start_button_animation_frame++;
   if (game->start_button_animation_frame > START_BUTTON_ANIMATION_SPEED) {
@@ -326,7 +326,7 @@ void display_start_button(Game *game)
      window_draw_text(
       game->window, 
       game->width / 2,
-      game->height / 2 - INSERT_COIN_FONT_SIZE, 
+      game->height / 2 - INSERT_COIN_FONT_SIZE/2, 
       str, 
       INSERT_COIN_FONT_SIZE, 
       WHITE_COLOR,
@@ -337,18 +337,13 @@ void display_start_button(Game *game)
 
 void display_best_scores(Game *game)
 {
-  char str[255];
-  int score;
-  char name[100]; 
   for (int i = 0; i < 5; i++) {
-    printf("%s", game->best_scores[i]);
-    sscanf(game->best_scores[i], "%s %d", name, &score);
-    sprintf(str, "%s. %d", name, score);
+
     window_draw_text(
       game->window, 
       game->width / 2, 
       ((game->height / 4) * 3 - DEFAULT_FONT_SIZE) + (i * DEFAULT_FONT_SIZE), 
-      str, 
+      game->best_scores[i], 
       DEFAULT_FONT_SIZE, 
       WHITE_COLOR,
       ALIGN_CENTER
@@ -363,10 +358,10 @@ void game_state_menu_draw(Game *game)
   }
 
   display_start_button(game);
-  //display_best_scores(game);
+  display_best_scores(game);
 
   const Uint8 *state = SDL_GetKeyboardState(NULL);
-  if (state[SDL_SCANCODE_RETURN]) {
+  if (state[SDL_SCANCODE_SPACE]) {
     game->state = STATE_GAME;
   }
 }
@@ -574,17 +569,20 @@ void game_load_best_scores(Game *game)
   char str[255];
   int i = 0;
 
+  game->best_scores = malloc(sizeof(char *) * 5);
+
   while (fgets(str, 255, fp) != NULL) {
     game->best_scores[i] = malloc(sizeof(char) * 255);
-    game->best_scores[i] = str;
-    printf("%s", game->best_scores[i]);
+    char *pseudo = strtok(str, " ");
+    int score = atoi(strtok(NULL, " "));
+
+    sprintf(game->best_scores[i], "%s : %d", pseudo, score);
     i++;
   }
 
   if (i < 5) {
     for (int j = i; j < 5; j++) {
-      game->best_scores[j] = malloc(sizeof(char) * 255);
-      sprintf(game->best_scores[j], "AAA 0");
+      sprintf(game->best_scores[j], "XXX : 0");
     }
   }
 
