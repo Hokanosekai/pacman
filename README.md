@@ -6,12 +6,6 @@
   <img width="32" src="https://i.imgur.com/iEdyLHW.png">
   <img width="32" src="https://i.imgur.com/iEdyLHW.png">
   <img width="32" src="https://i.imgur.com/E4WfkDu.png">
-
-  [![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
 </div>
 
 ## Description
