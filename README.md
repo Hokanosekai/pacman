@@ -1,12 +1,18 @@
-<center> 
+<div align="center"> 
 
-# Pac-Man
+  <h3>Pac-Man</h3>
 
   <img width="32" src="https://i.imgur.com/oco22UU.png">
   <img width="32" src="https://i.imgur.com/iEdyLHW.png">
   <img width="32" src="https://i.imgur.com/iEdyLHW.png">
   <img width="32" src="https://i.imgur.com/E4WfkDu.png">
-</center>
+
+  [![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![MIT License][license-shield]][license-url]
+</div>
 
 ## Description
 
@@ -48,10 +54,10 @@ This will remove all the `.o` files and the `pacman` executable.
 * Custom tileset file format (see [tileset.png](assets/textures/tileset.png))
 * Custom font file format (see [font.ttf](assets/font.ttf)) (note that the default font is Open Sans Regular from Google Fonts)
 * Sprite animation (ghosts and pacman) :
-  * Ghosts (see )
-  * Pacman
+  * Ghosts (see <a href="#ghosts">Ghosts</a>)
+  * Pacman (see <a href="#pacman">Pacman</a>)
 * Ghost AI (Blinky, Pinky, Inky and Clyde)
-* Bonus (cherry, strawberry, orange, apple)
+* Bonus (cherry, strawberry, orange, apple) (see <a href="#bonus">Bonus</a>)
 
 ## Leveling
 
