@@ -28,6 +28,7 @@ Window *window_create(char *title, int width, int height)
   window->height = height;
   window->title = title;
   window->font = NULL;
+
   window->window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN);
   if (window->window == NULL) {
       fprintf(stderr, "Erreur lors de la création de la fenêtre : %s\n", SDL_GetError());
@@ -60,6 +61,11 @@ void window_clear(Window *window)
 
 void window_update(Window *window)
 {
+  if (window->renderer == NULL) {
+    fprintf(stderr, "Erreur lors de la mise à jour de la fenêtre : %s\n", SDL_GetError());
+    cleanup(window->window, window->renderer, NULL);
+    return;
+  }
   SDL_RenderPresent(window->renderer);
 }
 
@@ -148,7 +154,7 @@ void window_draw_text(
   SDL_Texture *texture = SDL_CreateTextureFromSurface(window->renderer, surface);
   SDL_FreeSurface(surface);
   if (texture == NULL) {
-    fprintf(stderr, "Erreur lors de la création de la texture : %s", SDL_GetError());
+    fprintf(stderr, "Erreur lors de la création de la texture : %s\n", SDL_GetError());
     cleanup(window->window, window->renderer, NULL);
     return;
   }
@@ -168,12 +174,12 @@ void window_draw_text(
 
   SDL_Rect rect = {x, y - (font_size/2), strlen(text) * 8, font_size};
   if (SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h) != 0) {
-    fprintf(stderr, "Erreur lors de la récupération des dimensions de la texture : %s", SDL_GetError());
+    fprintf(stderr, "Erreur lors de la récupération des dimensions de la texture : %s\n", SDL_GetError());
     cleanup(window->window, window->renderer, texture);
     return;
   }
   if (SDL_RenderCopy(window->renderer, texture, NULL, &rect) != 0) {
-    fprintf(stderr, "Erreur lors du rendu de la texture : %s", SDL_GetError());
+    fprintf(stderr, "[window_draw_text] Erreur lors du rendu de la texture : %s\n", SDL_GetError());
     cleanup(window->window, window->renderer, texture);
     return;
   }
@@ -186,7 +192,7 @@ void window_draw_texture(
   SDL_Rect *dst
 ) {
   if (SDL_RenderCopy(window->renderer, texture, src, dst) != 0) {
-    fprintf(stderr, "Erreur lors du rendu de la texture : %s", SDL_GetError());
+    fprintf(stderr, "[window_draw_texture] Erreur lors du rendu de la texture : %s\n", SDL_GetError());
     cleanup(window->window, window->renderer, texture);
     return;
   }
@@ -234,7 +240,7 @@ void window_rotate_texture(
   SDL_QueryTexture(texture, NULL, NULL, &w, &h);
   SDL_Point center = { w/2, h/2 };
   if (SDL_RenderCopyEx(window->renderer, texture, NULL, rect, angle, &center, flip) != 0) {
-    fprintf(stderr, "Erreur lors du rendu de la texture : %s", SDL_GetError());
+    fprintf(stderr, "Erreur lors du rendu de la texture : %s\n", SDL_GetError());
     cleanup(window->window, window->renderer, texture);
     return;
   }
@@ -251,7 +257,7 @@ void window_draw_sprite(
 ) {
   SDL_Point center = { src->w/2, src->h/2 };
   if (SDL_RenderCopyEx(window->renderer, texture, src, dst, angle, &center, flip) != 0) {
-    fprintf(stderr, "Erreur lors du rendu de la texture : %s", SDL_GetError());
+    fprintf(stderr, "Erreur lors du rendu de la texture : %s\n", SDL_GetError());
     cleanup(window->window, window->renderer, texture);
     return;
   }

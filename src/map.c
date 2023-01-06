@@ -36,6 +36,8 @@ Map *map_init(Window *window, const char *map_path, const char *tiles_textures_p
     return NULL;
   }
 
+  map_load(map);
+
   return map;
 }
 
@@ -47,6 +49,24 @@ void map_destroy(Map *map)
 
   fclose(map->map_file);
   free(map);
+}
+
+void map_load(Map *map)
+{
+  char tile;
+  int row = 0, col = 0;
+
+  while (tile != EOF) {
+    tile = fgetc(map->map_file);
+
+    map->map[col][row] = get_tile_from_char(tile);
+
+    if (tile != '\n' && tile != ' ') col++;
+    if (col == map->cols) {
+      col = 0;
+      row++;
+    }
+  }
 }
 
 Tiles get_tile_from_char(char c)
@@ -83,28 +103,11 @@ Tiles get_tile_from_char(char c)
 
 void map_render(Map *map, Window *window)
 {
-  if (map == NULL) {
-    return;
-  }
+  if (map == NULL) return;
 
-  char tile;
   SDL_Rect src;
   SDL_Rect dst;
-
-  int row = 0, col = 0;
-
-  while (tile != EOF) {
-    tile = fgetc(map->map_file);
-
-    map->map[col][row] = get_tile_from_char(tile);
-
-    if (tile != '\n' && tile != ' ') col++;
-    if (col == map->cols) {
-      col = 0;
-      row++;
-    }
-  }
-
+ 
   for (int y = 0; y < map->rows; y++) {
     for (int x = 0; x < map->cols; x++) {
       switch (map->map[x][y])
@@ -202,9 +205,7 @@ void map_render(Map *map, Window *window)
 
 Tiles map_get_tile(Map *map, int x, int y)
 {
-  if (map == NULL) {
-    return TILE_SPACE;
-  }
+  if (map == NULL) return TILE_SPACE;
 
   if (x < 0 || x >= map->cols || y < 0 || y >= map->rows) {
     return TILE_SPACE;
@@ -215,9 +216,7 @@ Tiles map_get_tile(Map *map, int x, int y)
 
 void map_set_tile(Map *map, int x, int y, Tiles tile)
 {
-  if (map == NULL) {
-    return;
-  }
+  if (map == NULL) return;
 
   if (x < 0 || x >= map->cols || y < 0 || y >= map->rows) {
     return;
@@ -228,9 +227,7 @@ void map_set_tile(Map *map, int x, int y, Tiles tile)
 
 bool map_check_collision(Map *map, int x, int y)
 {
-  if (map == NULL) {
-    return false;
-  }
+  if (map == NULL) return false;
 
   if (x < 0 || x % MAP_TILE_SIZE >= map->cols || y < 0 || y % MAP_TILE_SIZE >= map->rows) {
     return false;

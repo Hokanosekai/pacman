@@ -134,7 +134,8 @@ The bonus will appear at a random interval of time and have a random position on
 | `arrow right` | Move right |
 | `space` | Start the game |
 | `escape` | Pause the game |
-| `alt + f4` | Quit the game |
+| `lalt + f4` | Quit the game |
+| `lctrl + r` | Restart the game |
 | `enter` | Validate action |
 
 ## Screenshots

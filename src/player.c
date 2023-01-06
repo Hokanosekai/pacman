@@ -70,19 +70,18 @@ void player_set_direction(Player *player, PlayerDirection direction)
   player->direction = direction;
 }
 
-void player_update(Map *map, Player *player)
+void player_update(Map *map, Player *player, SDL_KeyboardEvent key)
 {
   int next_x = player->next_x / MAP_TILE_SIZE;
   int next_y = player->next_y / MAP_TILE_SIZE;
 
   if (!player->moving) {
-    const Uint8 *state = SDL_GetKeyboardState(NULL);
 
-    if (state[SDL_SCANCODE_UP]) player->next_direction = PLAYER_UP;
-    if (state[SDL_SCANCODE_DOWN]) player->next_direction = PLAYER_DOWN;
-    if (state[SDL_SCANCODE_LEFT]) player->next_direction = PLAYER_LEFT;
-    if (state[SDL_SCANCODE_RIGHT]) player->next_direction = PLAYER_RIGHT;
-    if (state[SDL_SCANCODE_SPACE]) player->next_direction = PLAYER_NULL;
+    if (key.keysym.sym == SDLK_UP) player->next_direction = PLAYER_UP;
+    if (key.keysym.sym == SDLK_DOWN) player->next_direction = PLAYER_DOWN;
+    if (key.keysym.sym == SDLK_RIGHT) player->next_direction = PLAYER_RIGHT;
+    if (key.keysym.sym == SDLK_LEFT) player->next_direction = PLAYER_LEFT;
+    if (key.keysym.sym == SDLK_SPACE) player->next_direction = PLAYER_NULL;
 
     switch (player->next_direction)
     {

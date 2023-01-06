@@ -1,6 +1,8 @@
 # ifndef GAME_H
 # define GAME_H
 
+#include <stdbool.h>
+
 #include "bonus.h"
 #include "game_state.h"
 #include "window.h"
@@ -42,9 +44,12 @@ typedef struct {
     Ghost *ghosts[GHOST_AMOUNT];
     SDL_Texture *heart_texture;
     Bonus *bonus;
+    bool is_paused, is_key_pressed;
     int start_button_animation_frame;
     char **best_scores;
+    char *pseudo;
     int number_of_dot, number_of_power_pellet;
+    SDL_KeyboardEvent key;
 } Game;
 
 /**
@@ -69,6 +74,24 @@ void game_destroy(Game *game);
 void game_run(Game *game);
 
 /**
+ * @brief Update the game
+ * @param game Game
+ */
+void game_update(Game *game);
+
+/**
+ * @brief Render the game
+ * @param game Game
+ */
+void game_render(Game *game);
+
+/**
+ * @brief Game input
+ * @param game Game
+ */
+void game_input(Game *game);
+
+/**
  * @brief Check collision between the player and the map
  * @param game Game
  */
@@ -90,7 +113,9 @@ void game_reset(Game *game);
  * @brief Display the menu screen
  * @param game Game
  */
-void game_state_menu_draw(Game *game);
+void game_state_menu_draw(Game *game, SDL_KeyboardEvent key);
+
+void game_state_menu_update(Game *game);
 
 /**
  * @brief Display the start button
@@ -108,7 +133,9 @@ void display_best_scores(Game *game);
  * @brief Display the game screen
  * @param game Game
  */
-void game_state_game_draw(Game *game);
+void game_state_game_draw(Game *game, SDL_KeyboardEvent key);
+
+void game_state_game_update(Game *game);
 
 /**
  * @brief Display the score
@@ -129,10 +156,18 @@ void display_lives(Game *game);
 void display_level(Game *game);
 
 /**
+ * @brief Display the pause screen
+ * @param game Game
+ */
+void display_pause(Game *game);
+
+/**
  * @brief Display the game over screen
  * @param game Game
  */
-void game_state_game_over_draw(Game *game);
+void game_state_game_over_draw(Game *game, SDL_KeyboardEvent key);
+
+void game_state_game_over_update(Game *game);
 
 /**
  * @brief Display the game over text
@@ -145,14 +180,6 @@ void display_game_over(Game *game);
  * @param game Game
  */
 void display_insert_name(Game *game);
-
-/**
- * @brief Pseudo input
- * @param game Game
- * @param event Event
- * @param pseudo Pseudo
-*/
-void game_input(Game *game, SDL_Event *event, char *pseudo);
 
 /**
  * @brief Insert a score in the best scores
@@ -173,5 +200,12 @@ void game_save_best_scores(Game *game);
  * @param game Game
  */
 void game_load_best_scores(Game *game);
+
+/**
+ * @brief Global input
+ * @param game Game
+ * @param key Keyboard key
+ */
+void game_global_input(Game *game, SDL_KeyboardEvent key);
 
 # endif
