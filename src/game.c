@@ -58,6 +58,7 @@ Game *game_create(int width, int height, int scale)
   // init game state
   game->state = STATE_MENU;
   game->start_button_animation_frame = 0;
+  game->key_press_timer = 0;
   game->is_paused = false;
   game->is_key_pressed = false;
 
@@ -66,8 +67,7 @@ Game *game_create(int width, int height, int scale)
   if (game->player == NULL) return NULL;
 
   // init ghost
-  for (int i = 0; i < GHOST_AMOUNT; i++)
-  {
+  for (int i = 0; i < GHOST_AMOUNT; i++) {
     game->ghosts[i] = ghost_create(game->window, i+1);
     if (game->ghosts[i] == NULL) return NULL;
   }
@@ -75,6 +75,11 @@ Game *game_create(int width, int height, int scale)
   // init Bonus
   game->bonus = bonus_create(game->window, game->map);
   if (game->bonus == NULL) return NULL;
+
+  // init keys tab
+  for (int i = 0; i < KEYS_NUMBER; i++) {
+    game->keys[i] = false;
+  }
 
   printf("Loading best scores...\n");
   game_load_best_scores(game);
@@ -135,17 +140,16 @@ void game_run(Game *game)
       render = true;
 
       // update game
-      game_update(game);
+      game_update(game, (float) UPDATE_CAP);
 
       // game inputs
       game_input(game);
 
-      if (frame_time >= 1.0f)
-      {
+      if (frame_time >= 1.0f) {
         frame_time = 0;
         fps = frames;
         frames = 0;
-        printf("FPS: %d\n", fps);
+        //printf("FPS: %d %c\n", fps, game->last_key.keysym.sym);
       }
     }
 
@@ -159,18 +163,29 @@ void game_run(Game *game)
   }
 }
 
-void game_update(Game *game)
+void game_update(Game *game, float delta)
 {
+  if (game->last_key.keysym.mod & KMOD_LCTRL && game->keys[SDLK_r]) {
+    printf("Reset game\n");
+    game_reset(game);
+    return;
+  }
+
+  if (game->last_key.keysym.mod & KMOD_LALT && game->keys[SDLK_F4]) {
+    game->state = STATE_EXIT;
+    return;
+  }
+
   switch ((int)game->state)
   {
     case STATE_MENU:
-      game_state_menu_update(game);
+      game_state_menu_update(game, delta);
       break;
     case STATE_GAME:
-      game_state_game_update(game);
+      game_state_game_update(game, delta);
       break;
     case STATE_GAME_OVER:
-      game_state_game_over_update(game);
+      game_state_game_over_update(game, delta);
       break;
     case STATE_EXIT:
       printf("Exit game\n");
@@ -178,34 +193,34 @@ void game_update(Game *game)
     default:
       break;
   }
-
-  if (game->key.keysym.sym == SDLK_ESCAPE && game->state == STATE_GAME && !game->is_paused) {
-    game->is_paused = true;
-  } else if (game->key.keysym.sym == SDLK_ESCAPE && game->state == STATE_GAME && game->is_paused) {
-    game->is_paused = false;
-  }
-
-  if (game->key.keysym.mod & KMOD_LCTRL && game->key.keysym.sym == SDLK_r) {
-    game_reset(game);
-  }
-
-  if (game->key.keysym.mod & KMOD_LALT && game->key.keysym.sym == SDLK_F4) {
-    game->state = STATE_EXIT;
-  }
 }
 
 void game_input(Game *game)
 {
+  float start_time = SDL_GetTicks() / 1000.0f;
   SDL_Event event;
   if (SDL_PollEvent(&event)) {
     if (event.type == SDL_QUIT) game->state = STATE_EXIT;
-    if (event.type == SDL_KEYDOWN && !game->is_key_pressed) {
+    printf("start_time: %f , game->key_press_timer: %f\n", start_time, game->key_press_timer);
+    if (event.type == SDL_KEYDOWN && start_time - game->key_press_timer > PRESS_KEY_DELAY) {
+
       game->is_key_pressed = true;
-      game->key = event.key;
+      game->last_key = event.key;
+      game->key_press_timer = start_time;
+
+      if (event.key.keysym.sym < 0x80 && event.key.keysym.sym > 0) {
+        game->keys[event.key.keysym.sym] = true;
+        printf( "%c (0x%04X)\n", (char)event.key.keysym.sym,
+                        event.key.keysym.sym);
+      }
     }
-    if (event.type == SDL_KEYUP && game->is_key_pressed) {
+    if (event.type == SDL_KEYUP && start_time - game->key_press_timer > PRESS_KEY_DELAY) {
       game->is_key_pressed = false;
-      game->key.keysym.sym = SDLK_UNKNOWN;
+      game->key_press_timer = start_time;
+      if (event.key.keysym.sym < 0x80 && event.key.keysym.sym > 0) {
+        game->keys[event.key.keysym.sym] = false;
+
+      }
     }
   }
 }
@@ -220,13 +235,13 @@ void game_render(Game *game)
   switch ((int)game->state)
   {
     case STATE_MENU:
-      game_state_menu_draw(game, game->key);
+      game_state_menu_draw(game);
       break;
     case STATE_GAME:
-      game_state_game_draw(game, game->key);
+      game_state_game_draw(game);
       break;
     case STATE_GAME_OVER:
-      game_state_game_over_draw(game, game->key);
+      game_state_game_over_draw(game);
       break;
     case STATE_EXIT:
       printf("Exit game\n");
@@ -420,7 +435,17 @@ void display_start_button(Game *game)
   char str[255];
   sprintf(str, "Press Space to Start");
 
-  game->start_button_animation_frame++;
+  window_draw_text(
+    game->window, 
+    game->width / 2,
+    game->height / 2 - INSERT_COIN_FONT_SIZE/2, 
+    str, 
+    INSERT_COIN_FONT_SIZE, 
+    WHITE_COLOR,
+    ALIGN_CENTER
+  );
+
+  /*game->start_button_animation_frame++;
   if (game->start_button_animation_frame > START_BUTTON_ANIMATION_SPEED) {
     game->start_button_animation_frame = 0;
      window_draw_text(
@@ -432,43 +457,44 @@ void display_start_button(Game *game)
       WHITE_COLOR,
       ALIGN_CENTER
     );
-  }
+  }*/
 }
 
 void display_best_scores(Game *game)
 {
   for (int i = 0; i < 5; i++) {
+    char *str = malloc(sizeof(char) * 255);
+    sprintf(str, "%s", game->best_scores[i]);
 
     window_draw_text(
       game->window, 
       game->width / 2, 
       ((game->height / 4) * 3 - DEFAULT_FONT_SIZE) + (i * DEFAULT_FONT_SIZE), 
-      game->best_scores[i], 
+      str, 
       DEFAULT_FONT_SIZE, 
       WHITE_COLOR,
       ALIGN_CENTER
     );
+
+    free(str);
   }
 }
 
-void game_state_menu_draw(Game *game, SDL_KeyboardEvent key)
+void game_state_menu_draw(Game *game)
 {
-  if (game == NULL) {
-    return;
-  }
+  if (game == NULL) return;
 
   display_start_button(game);
   display_best_scores(game);
 }
 
-void game_state_menu_update(Game *game)
+void game_state_menu_update(Game *game, float delta_time)
 {
-  if (game == NULL) {
-    return;
-  }
+  if (game == NULL) return;
 
-  if (game->is_key_pressed && game->key.keysym.sym == SDLK_SPACE) {
+  if (game->keys[SDLK_SPACE] && game->is_key_pressed) {
     game->state = STATE_GAME;
+    game->is_key_pressed = false;
   }
 }
 
@@ -479,7 +505,7 @@ void display_score(Game *game)
 
   window_draw_text(
     game->window, 
-    5 + MAP_TILE_SIZE, 
+    5, 
     12, 
     str, 
     DEFAULT_FONT_SIZE, 
@@ -528,15 +554,13 @@ void display_pause(Game *game)
   );
 }
 
-void game_state_game_draw(Game *game, SDL_KeyboardEvent key)
+void game_state_game_draw(Game *game)
 {
-  if (game == NULL) {
-    return;
-  }
+  if (game == NULL) return;
 
   // display game info
   display_score(game);
-  //display_lives(game);
+  display_lives(game);
   display_level(game);
   if (game->is_paused) display_pause(game);
 
@@ -552,10 +576,15 @@ void game_state_game_draw(Game *game, SDL_KeyboardEvent key)
   }
 }
 
-void game_state_game_update(Game *game)
+void game_state_game_update(Game *game, float delta_time)
 {
-  if (game == NULL) {
-    return;
+  if (game == NULL) return;
+
+  // check if player has pressed escape
+  if (game->keys[SDLK_ESCAPE] && !game->is_paused) {
+    game->is_paused = true;
+  } else if (game->keys[SDLK_ESCAPE] && game->is_paused) {
+    game->is_paused = false;
   }
 
   // if player eats all dots go to next level
@@ -578,7 +607,7 @@ void game_state_game_update(Game *game)
   if (!game->is_paused) bonus_update(game->bonus, game->map, game->player);
 
   // update player
-  if (!game->is_paused) player_update(game->map, game->player, game->key);
+  if (!game->is_paused) player_update(game->map, game->player, game->last_key);
 
   // update ghosts
   if (!game->is_paused) {
@@ -633,7 +662,7 @@ void display_pseudo(Game *game, char *pseudo)
   );
 }
 
-void game_state_game_over_draw(Game *game, SDL_KeyboardEvent key)
+void game_state_game_over_draw(Game *game)
 {
   if (game == NULL) {
     return;
@@ -651,10 +680,17 @@ void game_state_game_over_draw(Game *game, SDL_KeyboardEvent key)
   display_insert_name(game);
 
   display_pseudo(game, game->pseudo);
+}
+
+void game_state_game_over_update(Game *game, float delta)
+{
+  if (game == NULL) {
+    return;
+  }
 
   char *temp = malloc(sizeof(char *) * 20);
 
-  if (key.keysym.sym == SDLK_BACKSPACE) {
+  if (game->keys[SDLK_BACKSPACE]) {
     if (strlen(game->pseudo) - 1 <= 1) {
       game->pseudo = "_";
       return;
@@ -664,32 +700,21 @@ void game_state_game_over_draw(Game *game, SDL_KeyboardEvent key)
     }
     game->pseudo = temp;
   } 
-  if (key.keysym.sym == SDLK_RETURN) {
+  if (game->keys[SDLK_RETURN]) {
     game_insert_score(game, game->score, game->pseudo);
     game_save_best_scores(game);
     game_reset(game);
   }
-  if(game->is_key_pressed && key.keysym.sym != SDLK_BACKSPACE && key.keysym.sym != SDLK_RETURN && key.keysym.sym != SDLK_UNKNOWN){
-    /* If the Unicode value is less than 0x80 then the    */
-    /* unicode value can be used to get a printable       */
-    /* representation of the key, using (char)unicode.    */
-
+  /*if(game->is_key_pressed && game->key.keysym.sym != SDLK_BACKSPACE && game->key.keysym.sym != SDLK_RETURN && game->key.keysym.sym != SDLK_UNKNOWN){
     //printf("%d %c\n", key.keysym.scancode, (char) key.keysym.sym);
 
     if (strlen(game->pseudo) == 1 && game->pseudo[0] == '_') game->pseudo = "";
     if (strlen(game->pseudo) > 20) return;
-    if( key.keysym.scancode < 0x80 && key.keysym.scancode > 0 ){
-      sprintf(temp, "%s%c", game->pseudo, (char)key.keysym.sym);
+    if(game->key.keysym.scancode < 0x80 && game->key.keysym.scancode > 0 ){
+      sprintf(temp, "%s%c", game->pseudo, (char)game->key.keysym.sym);
       game->pseudo = temp;
     }
-  }
-}
-
-void game_state_game_over_update(Game *game)
-{
-  if (game == NULL) {
-    return;
-  }
+  }*/
 }
 
 void game_insert_score(Game *game, int score, char *pseudo)

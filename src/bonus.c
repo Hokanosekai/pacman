@@ -51,9 +51,10 @@ void bonus_render(Bonus *bonus, Window *window, Map *map)
   bonus->render_timer++;
 
   // Deactivate bonus if render timer is greater than BONUS_RENDER_TIMER
-  if (bonus->render_timer == BONUS_RENDER_TIMER) {
+  if (bonus->render_timer >= BONUS_RENDER_TIMER) {
     bonus_deactivate(bonus);
     bonus_reset(bonus, map);
+    return;
   }
 
   // Blink bonus if render timer is greater than BONUS_RENDER_BLINK_TIMER

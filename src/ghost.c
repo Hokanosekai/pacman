@@ -14,9 +14,7 @@
 Ghost *ghost_create(Window *window, int ghost_number)
 {
   Ghost *ghost = malloc(sizeof(Ghost));
-  if (ghost == NULL) {
-    return NULL;
-  }
+  if (ghost == NULL) return NULL;
 
   ghost_move_to_spawn(ghost);
   ghost->speed = GHOST_SPEED;
@@ -33,16 +31,15 @@ Ghost *ghost_create(Window *window, int ghost_number)
 
   // Load ghost sprite
   window_load_texture(window, sprite_path, &ghost->sprite);
-  window_load_texture(window, GHOST_ANIMATE_TEXTURE_FILE, &ghost->scared_sprite);
+  window_load_texture(window, GHOST_SCARED_TEXTURE_FILE, &ghost->scared_sprite);
 
   return ghost;
 }
 
 void ghost_destroy(Ghost *ghost)
 {
-  if (ghost == NULL) {
-    return;
-  }
+  if (ghost == NULL) return;
+
   // Free ghost sprite
   SDL_DestroyTexture(ghost->sprite);
   SDL_DestroyTexture(ghost->scared_sprite);

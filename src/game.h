@@ -29,9 +29,12 @@
 
 #define PLAYER_TEXTURE_FILE "../assets/sprites/pacman2.png"
 #define GHOST_TEXTURE_FILE "../assets/sprites/ghost_%d.png"
-#define GHOST_ANIMATE_TEXTURE_FILE "../assets/sprites/ghost_scared.png"
+#define GHOST_SCARED_TEXTURE_FILE "../assets/sprites/ghost_scared.png"
 
 #define HEART_TEXTURE_FILE "../assets/sprites/heart.png"
+
+#define KEYS_NUMBER 322
+#define PRESS_KEY_DELAY 0.1f
 
 typedef struct {
     int width, height;
@@ -49,7 +52,9 @@ typedef struct {
     char **best_scores;
     char *pseudo;
     int number_of_dot, number_of_power_pellet;
-    SDL_KeyboardEvent key;
+    SDL_KeyboardEvent last_key;
+    bool keys[KEYS_NUMBER];
+    float key_press_timer;
 } Game;
 
 /**
@@ -76,8 +81,9 @@ void game_run(Game *game);
 /**
  * @brief Update the game
  * @param game Game
+ * @param delta_time Delta time
  */
-void game_update(Game *game);
+void game_update(Game *game, float delta_time);
 
 /**
  * @brief Render the game
@@ -113,9 +119,14 @@ void game_reset(Game *game);
  * @brief Display the menu screen
  * @param game Game
  */
-void game_state_menu_draw(Game *game, SDL_KeyboardEvent key);
+void game_state_menu_draw(Game *game);
 
-void game_state_menu_update(Game *game);
+/**
+ * @brief Update the menu screen
+ * @param game Game
+ * @param delta_time Delta time
+ */
+void game_state_menu_update(Game *game, float delta_time);
 
 /**
  * @brief Display the start button
@@ -133,9 +144,14 @@ void display_best_scores(Game *game);
  * @brief Display the game screen
  * @param game Game
  */
-void game_state_game_draw(Game *game, SDL_KeyboardEvent key);
+void game_state_game_draw(Game *game);
 
-void game_state_game_update(Game *game);
+/**
+ * @brief Update the game screen
+ * @param game Game
+ * @param delta_time Delta time
+ */
+void game_state_game_update(Game *game, float delta_time);
 
 /**
  * @brief Display the score
@@ -165,9 +181,14 @@ void display_pause(Game *game);
  * @brief Display the game over screen
  * @param game Game
  */
-void game_state_game_over_draw(Game *game, SDL_KeyboardEvent key);
+void game_state_game_over_draw(Game *game);
 
-void game_state_game_over_update(Game *game);
+/**
+ * @brief Update the game over screen
+ * @param game Game
+ * @param delta_time Delta time
+ */
+void game_state_game_over_update(Game *game, float delta_time);
 
 /**
  * @brief Display the game over text

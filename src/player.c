@@ -38,28 +38,27 @@ void player_render(Player *player, Window *window)
   SDL_Rect rect = {player->x, player->y, PLAYER_SIZE, PLAYER_SIZE};
   SDL_Rect src = {PLAYER_SIZE * player->animation_frame, 0, PLAYER_SIZE, PLAYER_SIZE};
 
-  if (player->direction == PLAYER_DOWN) {
-    window_draw_sprite(window, player->sprite, &src, &rect, 90.0, SDL_FLIP_NONE);
-  }
-  if (player->direction == PLAYER_UP) {
-    window_draw_sprite(window, player->sprite, &src, &rect, -90.0, SDL_FLIP_NONE);
-  }
-  if (player->direction == PLAYER_LEFT) {
-    window_draw_sprite(window, player->sprite, &src, &rect, 0.0, SDL_FLIP_HORIZONTAL);
-  }
-  if (player->direction == PLAYER_RIGHT) {
-    window_draw_sprite(window, player->sprite, &src, &rect, 0.0, SDL_FLIP_NONE);
-  }
-  if (player->direction == PLAYER_NULL) {
-    window_draw_sprite(window, player->sprite, &src, &rect, 0.0, SDL_FLIP_NONE);
+  switch (player->direction)
+  {
+    case PLAYER_UP:
+      window_draw_sprite(window, player->sprite, &src, &rect, -90.0, SDL_FLIP_NONE);
+      break;
+    case PLAYER_DOWN:
+      window_draw_sprite(window, player->sprite, &src, &rect, 90.0, SDL_FLIP_NONE);
+      break;
+    case PLAYER_LEFT:
+      window_draw_sprite(window, player->sprite, &src, &rect, 0.0, SDL_FLIP_HORIZONTAL);
+      break;
+    case PLAYER_RIGHT:
+    case PLAYER_NULL:
+      window_draw_sprite(window, player->sprite, &src, &rect, 0.0, SDL_FLIP_NONE);
+      break;
   }
 }
 
 void player_destroy(Player *player)
 {
-  if (player == NULL) {
-    return;
-  }
+  if (player == NULL) return;
 
   SDL_DestroyTexture(player->sprite);
   free(player);
@@ -77,11 +76,27 @@ void player_update(Map *map, Player *player, SDL_KeyboardEvent key)
 
   if (!player->moving) {
 
-    if (key.keysym.sym == SDLK_UP) player->next_direction = PLAYER_UP;
-    if (key.keysym.sym == SDLK_DOWN) player->next_direction = PLAYER_DOWN;
-    if (key.keysym.sym == SDLK_RIGHT) player->next_direction = PLAYER_RIGHT;
-    if (key.keysym.sym == SDLK_LEFT) player->next_direction = PLAYER_LEFT;
-    if (key.keysym.sym == SDLK_SPACE) player->next_direction = PLAYER_NULL;
+    // update player direction
+    /*switch (key.keysym.sym)
+    {
+      case SDLK_UP:
+        player->next_direction = PLAYER_UP;
+        break;
+      case SDLK_DOWN:
+        player->next_direction = PLAYER_DOWN;
+        break;
+      case SDLK_LEFT:
+        player->next_direction = PLAYER_LEFT;
+        break;
+      case SDLK_RIGHT:
+        player->next_direction = PLAYER_RIGHT;
+        break;
+      case SDLK_SPACE:
+        player->next_direction = PLAYER_NULL;
+        break;
+      default:
+        break;
+    }*/
 
     switch (player->next_direction)
     {

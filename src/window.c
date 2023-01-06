@@ -55,8 +55,12 @@ void window_destroy(Window *window)
 
 void window_clear(Window *window)
 {
-  SDL_SetRenderDrawColor(window->renderer, 255, 213, 128, 255);
-  SDL_RenderClear(window->renderer);
+  SDL_SetRenderDrawColor(window->renderer, 0, 0, 0, 255);
+  if (SDL_RenderClear(window->renderer) != 0) {
+    fprintf(stderr, "Erreur lors du nettoyage de la fenêtre : %s\n", SDL_GetError());
+    cleanup(window->window, window->renderer, NULL);
+    return;
+  }
 }
 
 void window_update(Window *window)
@@ -152,9 +156,8 @@ void window_draw_text(
   }
 
   SDL_Texture *texture = SDL_CreateTextureFromSurface(window->renderer, surface);
-  SDL_FreeSurface(surface);
   if (texture == NULL) {
-    fprintf(stderr, "Erreur lors de la création de la texture : %s\n", SDL_GetError());
+    fprintf(stderr, "[window_draw_text] Erreur lors de la création de la texture : %s\n", SDL_GetError());
     cleanup(window->window, window->renderer, NULL);
     return;
   }
@@ -183,6 +186,10 @@ void window_draw_text(
     cleanup(window->window, window->renderer, texture);
     return;
   }
+
+  // free resources
+  SDL_FreeSurface(surface);
+  SDL_DestroyTexture(texture);
 }
 
 void window_draw_texture(
@@ -205,18 +212,20 @@ void window_load_texture(
 ) {
   SDL_Surface* surface = IMG_Load(path);
   if (surface == NULL) {
-      fprintf(stderr, "Erreur lors du chargement de l'image : %s\n", SDL_GetError());
+      fprintf(stderr, "[window_load_texture]\n Erreur lors du chargement de l'image : %s\n", SDL_GetError());
       cleanup(window->window, window->renderer, NULL);
       return;
   }
 
   *texture = SDL_CreateTextureFromSurface(window->renderer, surface);
-  SDL_FreeSurface(surface);
   if (*texture == NULL) {
-      fprintf(stderr, "Erreur lors de la création de la texture : %s\n", SDL_GetError());
+      fprintf(stderr, "[window_load_texture] Erreur lors de la création de la texture : %s\n", SDL_GetError());
       cleanup(window->window, window->renderer, NULL);
       return;
   }
+
+  // free resources
+  SDL_FreeSurface(surface);
 }
 
 void window_load_font(Window *window, const char *path, int size)
