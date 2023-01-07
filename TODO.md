@@ -5,7 +5,7 @@ Here is a list of things that I would like to add or some known bugs that I woul
 * [x] Fix the left top corner tile that is not displayed
 
 * [ ] Add all others bonus (melon, galaxian, bell, key)
-* [ ] Fix the bonus display
+* [x] Fix the bonus display
 
 * [x] Fix the best score :
   * [x] Load the best score from a file

@@ -122,6 +122,10 @@ The bonus will appear at a random interval of time and have a random position on
 
 ## Pacman
 
+Pacman is controlled by the player. The player can move in 4 directions (up, down, left and right).
+
+The player goal is to eat all the dots and the bonus. The player can eat the ghosts after eating a big dot (the ghosts will be scared for a certain amount of time).
+
 ![Pacman](assets/sprites/pacman2.png)
 
 ## Controls
@@ -142,12 +146,22 @@ The bonus will appear at a random interval of time and have a random position on
 ## Screenshots
 
 ![Screenshot 1](https://i.imgur.com/HzC7cHy.png)
+> Start screen
 
 ![Screenshot 2](https://i.imgur.com/sEYOJXt.png)
+> Game screen
 
 ![Screenshot 3](https://i.imgur.com/cOM7m0p.png)
+> Pause screen
 
 ![Screenshot 4](https://i.imgur.com/fAtddkA.png)
+> Ghosts scared
+
+![Screenshot 5](https://i.imgur.com/ljKPrFL.png)
+> Bonus
+
+![Screenshot 6](https://i.imgur.com/6WgnHMY.png)
+> Game over screen
 
 ## Contributing
 
