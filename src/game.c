@@ -179,7 +179,8 @@ void game_update(Game *game, float delta)
   }
 
   // Check for display fps
-  if (game->keys[SDL_SCANCODE_F1]) {
+  if (game->last_key.keysym.mod & KMOD_LCTRL && game->keys[SDL_SCANCODE_F]) {
+    printf("Display fps\n");
     game->display_fps = !game->display_fps;
   }
 
@@ -231,11 +232,11 @@ void game_render(Game *game)
   // clear window
   window_clear(game->window);
 
-  // render fps
-  if (game->display_fps) display_fps(game);
-
   // render map
   map_render(game->map, game->window);
+
+  // render fps
+  if (game->display_fps) display_fps(game);
 
   switch ((int)game->state)
   {
@@ -442,8 +443,8 @@ void display_fps(Game *game)
 
   window_draw_text(
     game->window, 
-    10,
-    10,
+    game->width - 5,
+    game->height - 12,
     str,
     FPS_FONT_SIZE,
     WHITE_COLOR,
@@ -601,10 +602,8 @@ void game_state_game_update(Game *game, float delta_time)
   if (game == NULL) return;
 
   // check if player has pressed escape
-  if (game->keys[SDL_SCANCODE_ESCAPE] && !game->is_paused) {
-    game->is_paused = true;
-  } else if (game->keys[SDL_SCANCODE_ESCAPE] && game->is_paused) {
-    game->is_paused = false;
+  if (game->keys[SDL_SCANCODE_ESCAPE]) {
+    game->is_paused = !game->is_paused;
   }
 
   // if player eats all dots go to next level
