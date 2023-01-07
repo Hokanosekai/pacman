@@ -1,5 +1,5 @@
-AAA 310
-AAA 220
-XXX 0
-XXX 0
-XXX 0
+qsdqsdqsdq : 110
+s : 90
+sdf : 90
+sdf : 90
+ssdq : 80

@@ -35,7 +35,9 @@
 #define HEART_TEXTURE_FILE "../assets/sprites/heart.png"
 
 #define KEYS_NUMBER 322
-#define PRESS_KEY_DELAY 0.05f
+#define PRESS_KEY_DELAY 0.001f
+
+#define PSEUDO_MAX_LENGTH 10
 
 typedef struct {
     int width, height;
@@ -52,6 +54,7 @@ typedef struct {
     int start_button_animation_frame;
     char **best_scores;
     char *pseudo;
+    int pseudo_index;
     int number_of_dot, number_of_power_pellet;
     SDL_KeyboardEvent last_key;
     const Uint8 *keys;

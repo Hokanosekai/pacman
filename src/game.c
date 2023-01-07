@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <stdio.h>
+#include <ctype.h>
 
 #include "game.h"
 #include "game_state.h"
@@ -52,8 +53,9 @@ Game *game_create(int width, int height, int scale)
   game->level = 1;
 
   // init game pseudo
-  game->pseudo = malloc(sizeof(char) * 20);
-  game->pseudo = "Anonymous";
+  game->pseudo = malloc(sizeof(char) * PSEUDO_MAX_LENGTH);
+  game->pseudo = "ANON";
+  game->pseudo_index = 3;
 
   // init game state
   game->state = STATE_MENU;
@@ -78,6 +80,7 @@ Game *game_create(int width, int height, int scale)
   game->bonus = bonus_create(game->window, game->map);
   if (game->bonus == NULL) return NULL;
 
+  // init best scores
   printf("Loading best scores...\n");
   game_load_best_scores(game);
 
@@ -223,6 +226,15 @@ void game_input(Game *game)
     if (event.type == SDL_KEYUP && start_time - game->key_press_timer > PRESS_KEY_DELAY) {
       game->is_key_pressed = false;
       game->key_press_timer = start_time;
+    }
+    // check for text input
+    if (event.type == SDL_TEXTINPUT && game->state == STATE_GAME_OVER) {
+      if (game->pseudo_index < PSEUDO_MAX_LENGTH) {
+        char *tmp = malloc(sizeof(char) * (game->pseudo_index + 1));
+        sprintf(tmp, "%s%s", game->pseudo[0] == ' '? "" : game->pseudo, event.text.text);
+        game->pseudo = tmp;
+        game->pseudo_index++;
+      }
     }
   }
 }
@@ -710,53 +722,48 @@ void game_state_game_over_update(Game *game, float delta)
 
   char *temp = malloc(sizeof(char *) * 20);
 
-  if (game->keys[SDLK_BACKSPACE]) {
-    if (strlen(game->pseudo) - 1 <= 1) {
-      game->pseudo = "_";
+  if (game->keys[SDL_SCANCODE_BACKSPACE]) {
+    if (game->pseudo_index == 0) {
+      game->pseudo = " ";
       return;
     }
-    for (int i = 0; i < strlen(game->pseudo) - 1; i++) {
+    for (int i = 0; i < game->pseudo_index; i++) {
       temp[i] = game->pseudo[i];
     }
     game->pseudo = temp;
-  } 
-  if (game->keys[SDLK_RETURN]) {
+    game->pseudo_index--;
+  }
+  if (game->keys[SDL_SCANCODE_RETURN]) {
     game_insert_score(game, game->score, game->pseudo);
     game_save_best_scores(game);
     game_reset(game);
   }
-  /*if(game->is_key_pressed && game->key.keysym.sym != SDLK_BACKSPACE && game->key.keysym.sym != SDLK_RETURN && game->key.keysym.sym != SDLK_UNKNOWN){
-    //printf("%d %c\n", key.keysym.scancode, (char) key.keysym.sym);
-
-    if (strlen(game->pseudo) == 1 && game->pseudo[0] == '_') game->pseudo = "";
-    if (strlen(game->pseudo) > 20) return;
-    if(game->key.keysym.scancode < 0x80 && game->key.keysym.scancode > 0 ){
-      sprintf(temp, "%s%c", game->pseudo, (char)game->key.keysym.sym);
-      game->pseudo = temp;
-    }
-  }*/
 }
 
 void game_insert_score(Game *game, int score, char *pseudo)
 {
-  int index = 0;
-  for (int i = 0; i < 5; i++) {
-    int current_score;
-    char pseudo[255];
-    sscanf(game->best_scores[i], "%s %d", "AAA", &current_score);
+  int index = 0, i = 0;
+  // find the index where to insert the score
+  while (index < 5) {
+    char *temp = malloc(sizeof(char *) * 255);
+    strcpy(temp, game->best_scores[i]);
+    char *current_pseudo = strtok(temp, " : ");
+    int current_score = atoi(strtok(NULL, " : "));
     if (current_score > score) {
       index++;
     } else {
       break;
     }
+    i++;
   }
 
-  for (int i = 4; i >= index; i--) {
-    game->best_scores[i+1] = game->best_scores[i];
+  // move all scores after the index
+  for (int i = 4; i > index; i--) {
+    strcpy(game->best_scores[i], game->best_scores[i - 1]);
   }
 
-  game->best_scores[index] = malloc(sizeof(char) * 255);
-  sprintf(game->best_scores[index], "%s %d", pseudo, score);
+  // insert the score
+  sprintf(game->best_scores[index], "%s : %d", pseudo, score);
 }
 
 void game_save_best_scores(Game *game)
@@ -787,8 +794,8 @@ void game_load_best_scores(Game *game)
 
   while (fgets(str, 255, fp) != NULL) {
     game->best_scores[i] = malloc(sizeof(char) * 255);
-    char *pseudo = strtok(str, " ");
-    int score = atoi(strtok(NULL, " "));
+    char *pseudo = strtok(str, " : ");
+    int score = atoi(strtok(NULL, " : "));
 
     sprintf(game->best_scores[i], "%s : %d", pseudo, score);
     i++;
