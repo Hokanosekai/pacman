@@ -24,6 +24,7 @@
 #define DEFAULT_FONT_SIZE 20
 #define GAME_OVER_FONT_SIZE 50
 #define INSERT_COIN_FONT_SIZE 40
+#define FPS_FONT_SIZE 30
 
 #define MAP_TEXTURE_FILE "../assets/textures/tileset.png"
 
@@ -34,7 +35,7 @@
 #define HEART_TEXTURE_FILE "../assets/sprites/heart.png"
 
 #define KEYS_NUMBER 322
-#define PRESS_KEY_DELAY 0.1f
+#define PRESS_KEY_DELAY 0.05f
 
 typedef struct {
     int width, height;
@@ -53,8 +54,10 @@ typedef struct {
     char *pseudo;
     int number_of_dot, number_of_power_pellet;
     SDL_KeyboardEvent last_key;
-    bool keys[KEYS_NUMBER];
+    const Uint8 *keys;
     float key_press_timer;
+    bool display_fps;
+    int fps;
 } Game;
 
 /**
@@ -114,6 +117,12 @@ void game_next_level(Game *game);
  * @param game Game
  */
 void game_reset(Game *game);
+
+/**
+ * @brief Display the FPS
+ * @param game Game
+ */
+void display_fps(Game *game);
 
 /**
  * @brief Display the menu screen

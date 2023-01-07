@@ -56,7 +56,7 @@ Player *player_create(Window *window);
  * @param map Map
  * @param player Player
  */
-void player_update(Map *map, Player *player, SDL_KeyboardEvent key);
+void player_update(Map *map, Player *player, const Uint8 *keys);
 
 /**
  * @brief Move the Player object

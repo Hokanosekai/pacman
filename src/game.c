@@ -58,9 +58,11 @@ Game *game_create(int width, int height, int scale)
   // init game state
   game->state = STATE_MENU;
   game->start_button_animation_frame = 0;
-  game->key_press_timer = 0;
   game->is_paused = false;
-  game->is_key_pressed = false;
+
+  // init game fps
+  game->display_fps = false;
+  game->fps = 0;
 
   // init player
   game->player = player_create(game->window);
@@ -76,13 +78,13 @@ Game *game_create(int width, int height, int scale)
   game->bonus = bonus_create(game->window, game->map);
   if (game->bonus == NULL) return NULL;
 
-  // init keys tab
-  for (int i = 0; i < KEYS_NUMBER; i++) {
-    game->keys[i] = false;
-  }
-
   printf("Loading best scores...\n");
   game_load_best_scores(game);
+
+  // init keys
+  game->keys = SDL_GetKeyboardState(NULL);
+  game->is_key_pressed = false;
+  game->key_press_timer = 0;
   
   return game;
 }
@@ -121,7 +123,6 @@ void game_run(Game *game)
 
   float frame_time = 0;
   int frames = 0;
-  int fps = 0;
 
   while (game->state != STATE_EXIT)
   {
@@ -147,9 +148,8 @@ void game_run(Game *game)
 
       if (frame_time >= 1.0f) {
         frame_time = 0;
-        fps = frames;
+        game->fps = frames;
         frames = 0;
-        //printf("FPS: %d %c\n", fps, game->last_key.keysym.sym);
       }
     }
 
@@ -165,15 +165,22 @@ void game_run(Game *game)
 
 void game_update(Game *game, float delta)
 {
-  if (game->last_key.keysym.mod & KMOD_LCTRL && game->keys[SDLK_r]) {
+  // Check for reset game
+  if (game->last_key.keysym.mod & KMOD_LCTRL && game->keys[SDL_SCANCODE_R]) {
     printf("Reset game\n");
     game_reset(game);
     return;
   }
 
-  if (game->last_key.keysym.mod & KMOD_LALT && game->keys[SDLK_F4]) {
+  // Check for exit game
+  if (game->last_key.keysym.mod & KMOD_LALT && game->keys[SDL_SCANCODE_F4]) {
     game->state = STATE_EXIT;
     return;
+  }
+
+  // Check for display fps
+  if (game->keys[SDL_SCANCODE_F1]) {
+    game->display_fps = !game->display_fps;
   }
 
   switch ((int)game->state)
@@ -197,37 +204,35 @@ void game_update(Game *game, float delta)
 
 void game_input(Game *game)
 {
+  // get keyboard state
+  game->keys = SDL_GetKeyboardState(NULL);
+
+  // get last key pressed
   float start_time = SDL_GetTicks() / 1000.0f;
   SDL_Event event;
   if (SDL_PollEvent(&event)) {
+    // check for exit game
     if (event.type == SDL_QUIT) game->state = STATE_EXIT;
-    printf("start_time: %f , game->key_press_timer: %f\n", start_time, game->key_press_timer);
-    if (event.type == SDL_KEYDOWN && start_time - game->key_press_timer > PRESS_KEY_DELAY) {
-
+    // check for key pressed
+    if (event.type == SDL_KEYDOWN && !game->is_key_pressed) {
       game->is_key_pressed = true;
       game->last_key = event.key;
-      game->key_press_timer = start_time;
-
-      if (event.key.keysym.sym < 0x80 && event.key.keysym.sym > 0) {
-        game->keys[event.key.keysym.sym] = true;
-        printf( "%c (0x%04X)\n", (char)event.key.keysym.sym,
-                        event.key.keysym.sym);
-      }
     }
+    // check for key released
     if (event.type == SDL_KEYUP && start_time - game->key_press_timer > PRESS_KEY_DELAY) {
       game->is_key_pressed = false;
       game->key_press_timer = start_time;
-      if (event.key.keysym.sym < 0x80 && event.key.keysym.sym > 0) {
-        game->keys[event.key.keysym.sym] = false;
-
-      }
     }
   }
 }
 
 void game_render(Game *game)
 {
+  // clear window
   window_clear(game->window);
+
+  // render fps
+  if (game->display_fps) display_fps(game);
 
   // render map
   map_render(game->map, game->window);
@@ -430,6 +435,22 @@ void game_next_level(Game *game)
   }
 }
 
+void display_fps(Game *game)
+{
+  char str[255];
+  sprintf(str, "FPS: %d", game->fps);
+
+  window_draw_text(
+    game->window, 
+    10,
+    10,
+    str,
+    FPS_FONT_SIZE,
+    WHITE_COLOR,
+    ALIGN_RIGHT
+  );
+}
+
 void display_start_button(Game *game)
 {
   char str[255];
@@ -492,9 +513,8 @@ void game_state_menu_update(Game *game, float delta_time)
 {
   if (game == NULL) return;
 
-  if (game->keys[SDLK_SPACE] && game->is_key_pressed) {
+  if (game->keys[SDL_SCANCODE_SPACE]) {
     game->state = STATE_GAME;
-    game->is_key_pressed = false;
   }
 }
 
@@ -581,9 +601,9 @@ void game_state_game_update(Game *game, float delta_time)
   if (game == NULL) return;
 
   // check if player has pressed escape
-  if (game->keys[SDLK_ESCAPE] && !game->is_paused) {
+  if (game->keys[SDL_SCANCODE_ESCAPE] && !game->is_paused) {
     game->is_paused = true;
-  } else if (game->keys[SDLK_ESCAPE] && game->is_paused) {
+  } else if (game->keys[SDL_SCANCODE_ESCAPE] && game->is_paused) {
     game->is_paused = false;
   }
 
@@ -607,8 +627,9 @@ void game_state_game_update(Game *game, float delta_time)
   if (!game->is_paused) bonus_update(game->bonus, game->map, game->player);
 
   // update player
-  if (!game->is_paused) player_update(game->map, game->player, game->last_key);
-
+  if (!game->is_paused) {
+    player_update(game->map, game->player, game->keys);
+  }
   // update ghosts
   if (!game->is_paused) {
     for (int i = 0; i < GHOST_AMOUNT; i++) {
