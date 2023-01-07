@@ -134,21 +134,20 @@ The bonus will appear at a random interval of time and have a random position on
 | `arrow right` | Move right |
 | `space` | Start the game |
 | `escape` | Pause the game |
+| `lctrl + f` | Toggle FPS |
 | `lalt + f4` | Quit the game |
 | `lctrl + r` | Restart the game |
 | `enter` | Validate action |
 
 ## Screenshots
 
-![Screenshot 1](https://i.imgur.com/0Z7ZQ9M.png)
+![Screenshot 1](https://i.imgur.com/HzC7cHy.png)
 
-![Screenshot 2](https://i.imgur.com/0Z7ZQ9M.png)
+![Screenshot 2](https://i.imgur.com/sEYOJXt.png)
 
-![Screenshot 3](https://i.imgur.com/0Z7ZQ9M.png)
+![Screenshot 3](https://i.imgur.com/cOM7m0p.png)
 
-![Screenshot 4](https://i.imgur.com/0Z7ZQ9M.png)
-
-![Screenshot 5](https://i.imgur.com/0Z7ZQ9M.png)
+![Screenshot 4](https://i.imgur.com/fAtddkA.png)
 
 ## Contributing
 
