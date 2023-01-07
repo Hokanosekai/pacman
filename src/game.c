@@ -170,7 +170,6 @@ void game_update(Game *game, float delta)
 {
   // Check for reset game
   if (game->last_key.keysym.mod & KMOD_LCTRL && game->keys[SDL_SCANCODE_R]) {
-    printf("Reset game\n");
     game_reset(game);
     return;
   }
@@ -183,7 +182,6 @@ void game_update(Game *game, float delta)
 
   // Check for display fps
   if (game->last_key.keysym.mod & KMOD_LCTRL && game->keys[SDL_SCANCODE_F]) {
-    printf("Display fps\n");
     game->display_fps = !game->display_fps;
   }
 

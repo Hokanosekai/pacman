@@ -8,7 +8,7 @@ Here is a list of things that I would like to add or some known bugs that I woul
 
 ### Bonus
 
-* [ ] Add all others bonus (melon, galaxian, bell, key)
+* [x] Add all others bonus (melon, galaxian, bell, key)
 * [x] Fix the bonus display
 
 ### Game
