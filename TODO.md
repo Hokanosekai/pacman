@@ -1,11 +1,17 @@
-## TODO
+# TODO
 
 Here is a list of things that I would like to add or some known bugs that I would like to fix:
 
+### Map
+
 * [x] Fix the left top corner tile that is not displayed
+
+### Bonus
 
 * [ ] Add all others bonus (melon, galaxian, bell, key)
 * [x] Fix the bonus display
+
+### Game
 
 * [x] Fix the best score :
   * [x] Load the best score from a file
