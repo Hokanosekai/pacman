@@ -2,4 +2,4 @@ hoka : 27780
 hoka : 8270
 hoka : 5580
 hoka : 4800
-hoka : 2170
+lo : 4170

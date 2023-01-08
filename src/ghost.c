@@ -21,7 +21,7 @@ Ghost *ghost_create(Window *window, int ghost_number)
   ghost->direction = GHOST_UP;
   ghost->next_direction = GHOST_UP;
   ghost->animation_frame = 0;
-  ghost->animation_timer = 0;
+  ghost->start_time = SDL_GetTicks() / 1000.0f;
   ghost->is_active = false;
   ghost->moving = false;
   ghost->is_scared = false;
@@ -51,7 +51,7 @@ void ghost_destroy(Ghost *ghost)
 void ghost_render(Ghost *ghost, Window *window)
 {
   SDL_Rect rect = {ghost->x, ghost->y, GHOST_SIZE, GHOST_SIZE};
-  SDL_Rect src = {GHOST_SIZE * ghost->animation_frame, 0, GHOST_SIZE, GHOST_SIZE};
+  SDL_Rect src = {GHOST_SIZE * (ghost->animation_frame % GHOST_ANIMATION_COUNT), 0, GHOST_SIZE, GHOST_SIZE};
 
   if (ghost->is_scared) {
     window_draw_sprite(window, ghost->scared_sprite, &src, &rect, 0.0, SDL_FLIP_NONE);
@@ -62,15 +62,26 @@ void ghost_render(Ghost *ghost, Window *window)
 
 void ghost_update(Map *map, Ghost *ghost, Player *player)
 {
+  // Check if ghost is scared
   if (player->invincible) ghost->is_scared = true;
   else ghost->is_scared = false;
 
+  float current_time = SDL_GetTicks() / 1000.0f;
+
   // Update ghost animation
-  ghost->animation_timer++;
-  if (ghost->animation_timer > GHOST_ANIMATION_SPEED) {
-    ghost->animation_timer = 0;
+  if (!ghost->is_scared && current_time - ghost->start_time > GHOST_ANIMATION_CAP) {
+    ghost->start_time = current_time;
     ghost->animation_frame++;
-    if (ghost->animation_frame > GHOST_FRAMES - 1) {
+    if (ghost->animation_frame > GHOST_ANIMATION_COUNT - 1) {
+      ghost->animation_frame = 0;
+    }
+  }
+
+  // Update scared ghost animation
+  if (ghost->is_scared && current_time - ghost->start_time > GHOST_SCARED_ANIMATION_CAP) {
+    ghost->start_time = current_time;
+    ghost->animation_frame++;
+    if (ghost->animation_frame > GHOST_SCARED_ANIMATION_COUNT - 1) {
       ghost->animation_frame = 0;
     }
   }
@@ -209,7 +220,7 @@ void ghost_reset(Ghost *ghost)
   ghost_move_to_spawn(ghost);
   ghost->speed = GHOST_SPEED;
   ghost->animation_frame = 0;
-  ghost->animation_timer = 0;
+  ghost->start_time = SDL_GetTicks() / 1000.0f;
   ghost->is_active = false;
   ghost->moving = false;
   ghost->is_scared = false;

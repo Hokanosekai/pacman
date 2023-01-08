@@ -14,8 +14,11 @@
 #define GHOST_SPAWN_X 17
 #define GHOST_SPAWN_Y 13
 
-#define GHOST_ANIMATION_SPEED 10
-#define GHOST_FRAMES 6
+#define GHOST_ANIMATION_COUNT 6
+#define GHOST_ANIMATION_CAP UPDATE_CAP / GHOST_ANIMATION_COUNT
+
+#define GHOST_SCARED_ANIMATION_COUNT 6
+#define GHOST_SCARED_ANIMATION_CAP UPDATE_CAP / GHOST_SCARED_ANIMATION_COUNT
 
 typedef enum {
     GHOST_UP,
@@ -28,8 +31,9 @@ typedef enum {
 typedef struct {
   int x, y;
   int next_x, next_y;
-  int speed, speed_timer;
-  int animation_frame, animation_timer;
+  int speed;
+  float start_time;
+  int animation_frame;
   GhostDirection direction, next_direction;
   SDL_Texture *sprite;
   SDL_Texture *scared_sprite;
