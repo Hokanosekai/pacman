@@ -13,7 +13,6 @@
 #define WINDOW_HEIGHT 800
 #define WINDOW_SCALE 1
 
-
 int main(int argc, char *argv[])
 {
   srand(time(NULL));

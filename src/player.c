@@ -18,13 +18,12 @@ Player *player_create(Window *window)
 
   player_move_to_spawn(player);
   player->speed = PLAYER_SPEED;
-  player->speed_timer = 0;
   player->animation_frame = 0;
   player->moving = false;
-  player->dead = false;
   player->invincible = false;
   player->lives = PLAYER_LIVES;
-  player->invincible_timer = 0;
+  player->invincible_start_time = 0;
+  player->start_time = SDL_GetTicks() / 1000.0f;
   player->number_of_dots_eaten = 0;
   player->number_of_power_pellets_eaten = 0;
   player->number_of_ghosts_eaten = 0;
@@ -36,7 +35,7 @@ Player *player_create(Window *window)
 void player_render(Player *player, Window *window)
 {
   SDL_Rect rect = {player->x, player->y, PLAYER_SIZE, PLAYER_SIZE};
-  SDL_Rect src = {PLAYER_SIZE * player->animation_frame, 0, PLAYER_SIZE, PLAYER_SIZE};
+  SDL_Rect src = {PLAYER_SIZE * (player->animation_frame % PLAYER_ANIMATION_COUNT), 0, PLAYER_SIZE, PLAYER_SIZE};
 
   switch (player->direction)
   {
@@ -71,6 +70,8 @@ void player_set_direction(Player *player, PlayerDirection direction)
 
 void player_update(Map *map, Player *player, const Uint8 *keys)
 {
+  float current_time = SDL_GetTicks() / 1000.0f;
+
   int next_x = player->next_x / MAP_TILE_SIZE;
   int next_y = player->next_y / MAP_TILE_SIZE;
 
@@ -125,25 +126,20 @@ void player_update(Map *map, Player *player, const Uint8 *keys)
   player_move(player);
 
   // update player animation
-  player->animation_timer += 1;
-  if (player->animation_timer > PLAYER_ANIMATION_SPEED) {
-    player->animation_timer = 0;
+  if (current_time - player->start_time >= PLAYER_ANIMATION_CAP) {
     if (player->moving) {
       player->animation_frame++;
-      if (player->animation_frame > PLAYER_FRAMES - 1) {
-        player->animation_frame = 0;
-      }
     } else {
       player->animation_frame = 0;
     }
+    player->start_time = current_time;
   }
 
-  if (player->invincible) {
-    player->invincible_timer++;
-    if (player->invincible_timer > PLAYER_INVINCIBLE_TIME) {
-      player->invincible = false;
-      player->invincible_timer = 0;
-    }
+  if (
+    player->invincible
+    && current_time - player->invincible_start_time >= PLAYER_INVINCIBLE_TIME
+  ) {
+    player->invincible = false;
   }
 }
 
@@ -185,26 +181,23 @@ void player_move_to_spawn(Player *player)
 
 void player_kill(Player *player)
 {
-  player->dead = true;
   player->lives--;
   player_move_to_spawn(player);
   player->moving = false;
   player->invincible = false;
-  player->invincible_timer = 0;
+  player->invincible_start_time = 0;
+  player->start_time = SDL_GetTicks() / 1000.0f;
   player->animation_frame = 0;
-  player->animation_timer = 0;
-  player->speed_timer = 0;
   player->number_of_ghosts_eaten = 0;
 }
 
 void player_reset(Player *player)
 {
-  player->speed_timer = 0;
   player->animation_frame = 0;
   player->moving = false;
-  player->dead = false;
   player->invincible = false;
-  player->invincible_timer = 0;
+  player->invincible_start_time = 0;
+  player->start_time = SDL_GetTicks() / 1000.0f;
   player->number_of_dots_eaten = 0;
   player->number_of_power_pellets_eaten = 0;
   player->number_of_ghosts_eaten = 0;

@@ -6,6 +6,9 @@
 #include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
 
+#define FPS 30.0f
+#define UPDATE_CAP 1.0f / FPS
+
 #define RED_COLOR (SDL_Color) { 255, 0, 0, 255 }
 #define GREEN_COLOR (SDL_Color) { 0, 255, 0, 255 }
 #define BLUE_COLOR (SDL_Color) { 0, 0, 255, 255 }

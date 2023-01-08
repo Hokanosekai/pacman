@@ -51,8 +51,6 @@ void bonus_render(Bonus *bonus, Window *window, Map *map)
   SDL_Rect dest = {bonus->x, bonus->y, BONUS_SPRITE_SIZE, BONUS_SPRITE_SIZE};
   float current_time = SDL_GetTicks() / 1000.0f;
 
-  printf("current_time: %f, render_start_time: %f\n", current_time, bonus->render_start_time);
-
   if (current_time - bonus->render_start_time >= BONUS_RENDER_TIME) {
     bonus_deactivate(bonus);
     bonus_reset(bonus, map);
@@ -74,7 +72,6 @@ void bonus_update(Bonus *bonus, Map *map, Player *player)
   if (bonus->is_activate) return;
 
   float current_time = SDL_GetTicks() / 1000.0f;
-  //printf("current_time: %f, start_time: %f, interval: %f\n", current_time, bonus->start_time, bonus->interval);
   if (current_time - bonus->start_time >= bonus->interval) {
     bonus_activate(bonus);
     bonus->start_time = current_time;

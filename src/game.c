@@ -12,9 +12,6 @@
 
 #define _XOPEN_SOURCE 500
 
-#define FPS 30.0f
-#define UPDATE_CAP 1.0f / FPS
-
 Game *game_create(int width, int height, int scale)
 {
   Game *game = malloc(sizeof(*game));
@@ -340,7 +337,7 @@ void game_check_collision(Game *game)
     map->map[x][y] = TILE_SPACE;
     game->score += 50;
     game->player->invincible = true;
-    game->player->invincible_timer = 0;
+    game->player->invincible_start_time = SDL_GetTicks() / 1000.0f;
     game->player->number_of_ghosts_eaten = 0;
     game->player->number_of_power_pellets_eaten++;
   }

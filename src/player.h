@@ -14,10 +14,11 @@
 #define PLAYER_SPAWN_X 17
 #define PLAYER_SPAWN_Y 22
 
-#define PLAYER_ANIMATION_SPEED 3
-#define PLAYER_INVINCIBLE_TIME 300
+#define PLAYER_ANIMATION_COUNT 6
+#define PLAYER_ANIMATION_CAP UPDATE_CAP / PLAYER_ANIMATION_COUNT
+#define PLAYER_INVINCIBLE_TIME 10
+
 #define PLAYER_LIVES 3
-#define PLAYER_FRAMES 6
 
 typedef enum {
   PLAYER_NULL,
@@ -30,15 +31,15 @@ typedef enum {
 typedef struct {
   int x, y;
   int next_x, next_y;
-  int speed, speed_timer;
-  int animation_frame, animation_timer;
+  int speed;
+  float start_time;
+  int animation_frame;
   int lives;
   SDL_Texture *sprite;
   PlayerDirection direction, next_direction;
   bool moving;
-  bool dead;
   bool invincible;
-  int invincible_timer;
+  float invincible_start_time;
   int number_of_dots_eaten;
   int number_of_power_pellets_eaten;
   int number_of_ghosts_eaten;
