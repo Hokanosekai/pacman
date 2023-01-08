@@ -13,20 +13,24 @@
 
 #define BONUS_SPRITES_NUMBER 8
 
-#define BONUS_RENDER_TIMER 10000
-#define BONUS_RENDER_BLINK_TIMER 9000
+#define BONUS_RENDER_TIME 20
+#define BONUS_BLINK_TIME 15
 
-#define BONUS_ANIMATION_TIMER 5
+#define BONUS_ANIMATION_COUNT 2
+#define BONUS_ANIMATION_CAP (1.0 / 30) / BONUS_ANIMATION_COUNT
 
 #define BONUS_SPRITE_SIZE 32
 
-#define BONUS_MAX_INTERVAL 2000
-#define BONUS_MIN_INTERVAL 1000
+#define BONUS_MAX_INTERVAL 30
+#define BONUS_MIN_INTERVAL 20
 
 typedef struct {
   int x, y;
-  int interval, timer;
+  float start_time;
+  float interval, timer;
   SDL_Texture *texture;
+  float animation_start_time;
+  float render_start_time;
   int animation_timer;
   int render_timer;
   bool is_activate;

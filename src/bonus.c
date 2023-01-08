@@ -17,6 +17,9 @@ Bonus *bonus_create(Window *window, Map *map)
   bonus->render_timer = 0;
   bonus->is_activate = false;
   bonus->timer = 0;
+  bonus->start_time = SDL_GetTicks() / 1000.0f;
+  bonus->animation_start_time = 0;
+  bonus->render_start_time = 0;
 
   // Generate x and y position
   bonus_generate_position(map, bonus);
@@ -46,23 +49,20 @@ void bonus_render(Bonus *bonus, Window *window, Map *map)
   if (!bonus->is_activate) return;
 
   SDL_Rect dest = {bonus->x, bonus->y, BONUS_SPRITE_SIZE, BONUS_SPRITE_SIZE};
+  float current_time = SDL_GetTicks() / 1000.0f;
 
-  // Increment render timer
-  bonus->render_timer++;
+  printf("current_time: %f, render_start_time: %f\n", current_time, bonus->render_start_time);
 
-  // Deactivate bonus if render timer is greater than BONUS_RENDER_TIMER
-  if (bonus->render_timer >= BONUS_RENDER_TIMER) {
+  if (current_time - bonus->render_start_time >= BONUS_RENDER_TIME) {
     bonus_deactivate(bonus);
     bonus_reset(bonus, map);
     return;
   }
 
-  // Blink bonus if render timer is greater than BONUS_RENDER_BLINK_TIMER
-  if (bonus->render_timer >= BONUS_RENDER_BLINK_TIMER) {
-    bonus->animation_timer++;
-    if (bonus->animation_timer > BONUS_ANIMATION_TIMER) {
+  if (current_time - bonus->render_start_time >= BONUS_BLINK_TIME) {
+    if (current_time - bonus->animation_start_time >= BONUS_ANIMATION_CAP) {
       window_draw_texture(window, bonus->texture, &bonus->src, &dest);
-      bonus->animation_timer = 0;
+      bonus->animation_start_time = current_time;
     }
   } else {
     window_draw_texture(window, bonus->texture, &bonus->src, &dest);
@@ -73,16 +73,18 @@ void bonus_update(Bonus *bonus, Map *map, Player *player)
 {
   if (bonus->is_activate) return;
 
-  bonus->timer++;
-  if (bonus->timer >= bonus->interval) {
+  float current_time = SDL_GetTicks() / 1000.0f;
+  //printf("current_time: %f, start_time: %f, interval: %f\n", current_time, bonus->start_time, bonus->interval);
+  if (current_time - bonus->start_time >= bonus->interval) {
     bonus_activate(bonus);
-    bonus->timer = 0;
+    bonus->start_time = current_time;
   }
 }
 
 void bonus_activate(Bonus *bonus)
 {
   bonus->is_activate = true;
+  bonus->render_start_time = SDL_GetTicks() / 1000.0f;
 }
 
 void bonus_deactivate(Bonus *bonus)
@@ -146,6 +148,9 @@ void bonus_reset(Bonus *bonus, Map *map)
   bonus->animation_timer = 0;
   bonus->render_timer = 0;
   bonus->timer = 0;
+  bonus->start_time = SDL_GetTicks() / 1000.0f;
+  bonus->animation_start_time = 0;
+  bonus->render_start_time = 0;
 
   // Regenerate position, sprite and interval
   bonus_generate_interval(bonus);
