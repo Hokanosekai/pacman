@@ -19,6 +19,9 @@
 #define BONUS_ANIMATION_COUNT 2
 #define BONUS_ANIMATION_CAP UPDATE_CAP / BONUS_ANIMATION_COUNT
 
+#define BONUS_FRAME_CAP 2
+#define BONUS_FRAME_MAX 10
+
 #define BONUS_SPRITE_SIZE 32
 
 #define BONUS_MAX_INTERVAL 30
@@ -27,12 +30,11 @@
 typedef struct {
   int x, y;
   float start_time;
-  float interval, timer;
+  float interval;
   SDL_Texture *texture;
   float animation_start_time;
   float render_start_time;
-  int animation_timer;
-  int render_timer;
+  int frame_count;
   bool is_activate;
   SDL_Rect src;
 } Bonus;

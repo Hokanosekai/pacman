@@ -13,10 +13,8 @@ Bonus *bonus_create(Window *window, Map *map)
   // Load texture
   window_load_texture(window, BONUS_TEXTURE_FILE, &bonus->texture);
 
-  bonus->animation_timer = 0;
-  bonus->render_timer = 0;
   bonus->is_activate = false;
-  bonus->timer = 0;
+  bonus->frame_count = 0;
   bonus->start_time = SDL_GetTicks() / 1000.0f;
   bonus->animation_start_time = 0;
   bonus->render_start_time = 0;
@@ -59,8 +57,14 @@ void bonus_render(Bonus *bonus, Window *window, Map *map)
 
   if (current_time - bonus->render_start_time >= BONUS_BLINK_TIME) {
     if (current_time - bonus->animation_start_time >= BONUS_ANIMATION_CAP) {
-      window_draw_texture(window, bonus->texture, &bonus->src, &dest);
+      bonus->frame_count++;
       bonus->animation_start_time = current_time;
+    }
+    if (bonus->frame_count < BONUS_FRAME_CAP) {
+      window_draw_texture(window, bonus->texture, &bonus->src, &dest);
+    }
+    if (bonus->frame_count >= BONUS_FRAME_MAX) {
+      bonus->frame_count = 0;
     }
   } else {
     window_draw_texture(window, bonus->texture, &bonus->src, &dest);
@@ -142,9 +146,7 @@ bool bonus_check_collision(Bonus *bonus, Player *player)
 void bonus_reset(Bonus *bonus, Map *map)
 {
   bonus->is_activate = false;
-  bonus->animation_timer = 0;
-  bonus->render_timer = 0;
-  bonus->timer = 0;
+  bonus->frame_count = 0;
   bonus->start_time = SDL_GetTicks() / 1000.0f;
   bonus->animation_start_time = 0;
   bonus->render_start_time = 0;
