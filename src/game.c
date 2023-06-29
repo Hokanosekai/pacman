@@ -209,7 +209,7 @@ void game_input(Game *game)
   // get last key pressed
   float start_time = SDL_GetTicks() / 1000.0f;
   SDL_Event event;
-  if (SDL_PollEvent(&event)) {
+  while (SDL_PollEvent(&event)) {
     // check for exit game
     if (event.type == SDL_QUIT) game->state = STATE_EXIT;
     // check for key pressed

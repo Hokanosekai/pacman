@@ -61,7 +61,7 @@ void map_load(Map *map)
 
     map->map[col][row] = get_tile_from_char(tile);
 
-    if (tile != '\n' && tile != ' ') col++;
+    if (tile != '\n' && tile != ' ' && tile != '\r') col++;
     if (col == map->cols) {
       col = 0;
       row++;
